@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { fetchSurnameInfo } from '../../services/external/wikidata'
 import { fetchWikiTreeProfiles } from '../../services/external/wikitree'
+import { fetchNationalityInfo } from '../../services/external/forebears'
 import SurnameSearchForm from './SurnameSearchForm'
 import SourceDisclaimer from './SourceDisclaimer'
 import OriginSummaryCard from './OriginSummaryCard'
 import NotablePeopleList from './NotablePeopleList'
+import NationalityCard from './NationalityCard'
 import LoadingSpinner from '../common/LoadingSpinner'
 
 const DEFAULT_SURNAME = 'Mostafá'
@@ -14,31 +16,35 @@ export default function ResearchHubPage() {
   const [loading, setLoading] = useState(false)
   const [wikidataInfo, setWikidataInfo] = useState(null)
   const [wikitreeInfo, setWikitreeInfo] = useState(null)
+  const [nationalityInfo, setNationalityInfo] = useState(null)
   const [searched, setSearched] = useState(false)
 
   useEffect(() => {
-    runSearch(DEFAULT_SURNAME)
+    runSearch(DEFAULT_SURNAME, '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function runSearch(term) {
+  async function runSearch(term, forename) {
     setLoading(true)
     setSearched(true)
-    const [wikidataResult, wikitreeResult] = await Promise.all([
+    const [wikidataResult, wikitreeResult, nationalityResult] = await Promise.all([
       fetchSurnameInfo(term).catch(() => null),
       fetchWikiTreeProfiles(term),
+      fetchNationalityInfo(forename, term),
     ])
     setWikidataInfo(wikidataResult)
     setWikitreeInfo(wikitreeResult)
+    setNationalityInfo(nationalityResult)
     setLoading(false)
   }
 
-  function handleSearch(term) {
+  function handleSearch(term, forename) {
     setSurname(term)
-    runSearch(term)
+    runSearch(term, forename)
   }
 
-  const nothingFound = searched && !loading && !wikidataInfo && !wikitreeInfo
+  const nothingFound =
+    searched && !loading && !wikidataInfo && !wikitreeInfo && !nationalityInfo
 
   return (
     <div>
@@ -68,6 +74,13 @@ export default function ResearchHubPage() {
         <NotablePeopleList
           title="Perfis públicos (WikiTree)"
           people={wikitreeInfo.profiles}
+        />
+      )}
+
+      {!loading && nationalityInfo && (
+        <NationalityCard
+          countries={nationalityInfo.countries}
+          spheres={nationalityInfo.spheres}
         />
       )}
 
