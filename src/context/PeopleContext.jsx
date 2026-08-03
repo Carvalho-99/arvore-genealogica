@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { subscribeToPeople } from '../services/firestore/peopleService'
+import { anonymousSignInReady } from '../config/firebase'
 
 const PeopleContext = createContext(null)
 
@@ -9,17 +10,35 @@ export function PeopleProvider({ children }) {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const unsubscribe = subscribeToPeople(
-      (list) => {
-        setPeople(list)
-        setLoading(false)
-      },
-      (err) => {
+    let unsubscribe = () => {}
+    let cancelled = false
+
+    // Firestore precisa que o login anônimo já tenha terminado antes de
+    // abrir o listener, senão o primeiro pedido é recusado (permission-denied)
+    // e o SDK não tenta de novo sozinho depois que o login completa.
+    anonymousSignInReady
+      .then(() => {
+        if (cancelled) return
+        unsubscribe = subscribeToPeople(
+          (list) => {
+            setPeople(list)
+            setLoading(false)
+          },
+          (err) => {
+            setError(err)
+            setLoading(false)
+          }
+        )
+      })
+      .catch((err) => {
         setError(err)
         setLoading(false)
-      }
-    )
-    return unsubscribe
+      })
+
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   }, [])
 
   const peopleById = useMemo(() => {
