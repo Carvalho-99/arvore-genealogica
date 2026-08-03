@@ -62,10 +62,14 @@ export function computeTreeLayout(people, rootId) {
       return anchorA - anchorB
     })
 
-    const radius = gen === 0 ? 0 : BASE_RADIUS + RADIUS_PER_GEN * Math.abs(gen)
     const n = ids.length
 
     ids.forEach((id, index) => {
+      // a pessoa raiz fica sempre no centro exato (raio 0); qualquer
+      // outra pessoa na mesma geração dela (cônjuge, irmãos) precisa
+      // de raio pra não empilhar em cima da raiz e virar um ponto só
+      const radius =
+        id === rootId ? 0 : BASE_RADIUS + RADIUS_PER_GEN * Math.max(1, Math.abs(gen))
       const angle =
         n === 1 ? 0 : (index / n) * Math.PI * 2 + (gen % 2 === 0 ? 0 : Math.PI / n)
       const x = radius * Math.cos(angle)

@@ -1,6 +1,6 @@
-import { Line, QuadraticBezierLine } from '@react-three/drei'
 import PersonNode3D from './PersonNode3D'
 import FallingLeaves from './FallingLeaves'
+import Branch from './Branch'
 
 export default function TreeScene({ nodes, edges, onSelect, leavesRef }) {
   const minY = nodes.reduce((min, n) => Math.min(min, n.y), 0)
@@ -21,27 +21,21 @@ export default function TreeScene({ nodes, edges, onSelect, leavesRef }) {
 
       {edges.map((edge, i) =>
         edge.type === 'parent' ? (
-          <QuadraticBezierLine
+          <Branch
             key={i}
-            start={[edge.from.x, edge.from.y, edge.from.z]}
-            end={[edge.to.x, edge.to.y, edge.to.z]}
-            mid={[
-              (edge.from.x + edge.to.x) / 2,
-              (edge.from.y + edge.to.y) / 2,
-              (edge.from.z + edge.to.z) / 2 + 0.6,
-            ]}
-            color="#6b4a2f"
-            lineWidth={2}
+            from={edge.from}
+            to={edge.to}
+            radius={0.055}
+            color="#5f3f26"
           />
         ) : (
-          <Line
+          <Branch
             key={i}
-            points={[
-              [edge.from.x, edge.from.y, edge.from.z],
-              [edge.to.x, edge.to.y, edge.to.z],
-            ]}
+            from={edge.from}
+            to={edge.to}
+            radius={0.03}
             color="#a8763f"
-            lineWidth={1.5}
+            curveOut={0.15}
           />
         )
       )}
