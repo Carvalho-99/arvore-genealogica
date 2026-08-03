@@ -30,7 +30,7 @@ export default function Tree3DPage() {
 
   if (!rootPerson) {
     return (
-      <div className="mt-16 text-center text-sm text-stone-400">
+      <div className="mt-16 text-center text-sm text-slate-400">
         Cadastre pelo menos uma pessoa na aba Árvore pra ver a visão 3D.
       </div>
     )
@@ -38,24 +38,19 @@ export default function Tree3DPage() {
 
   return (
     <div className="-mx-4 -mt-6">
-      <div
-        className="h-[calc(100svh-8.5rem)] w-full touch-none"
-        style={{
-          background:
-            'radial-gradient(ellipse at 50% 30%, #fbf3df 0%, #ecd9b3 55%, #d8bd88 100%)',
-        }}
-      >
+      <div className="h-[calc(100svh-8.5rem)] w-full touch-none">
         <Canvas
           camera={{
             position: [camDistance * 0.6, centerY + camDistance * 0.4, camDistance * 0.6],
             fov: 50,
           }}
-          gl={{ preserveDrawingBuffer: true }}
+          gl={{ preserveDrawingBuffer: true, alpha: true }}
         >
           <Suspense fallback={null}>
-            <ambientLight intensity={0.7} />
-            <directionalLight position={[5, centerY + 6, 4]} intensity={1.1} />
-            <fog attach="fog" args={['#ecd9b3', camDistance, camDistance * 3.2]} />
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[5, centerY + 6, 4]} intensity={1} color="#bae6fd" />
+            <pointLight position={[0, centerY, 0]} intensity={0.6} color="#fbbf24" />
+            <fog attach="fog" args={['#060a15', camDistance * 1.4, camDistance * 3.4]} />
             <TreeScene nodes={layout.nodes} edges={layout.edges} onSelect={(id) => navigate(`/pessoa/${id}`)} />
             <OrbitControls
               target={[0, centerY, 0]}
@@ -70,7 +65,7 @@ export default function Tree3DPage() {
           </Suspense>
         </Canvas>
       </div>
-      <p className="px-4 pt-2 text-center text-xs text-stone-500">
+      <p className="px-4 pt-2 text-center text-xs text-slate-400">
         Arraste pra girar a árvore, toque numa pessoa pra abrir o cartão dela.
       </p>
     </div>

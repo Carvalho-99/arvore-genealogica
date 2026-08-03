@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Text } from '@react-three/drei'
 
 const colorByGender = {
-  F: '#d97a91',
-  M: '#5b8fa8',
-  other: '#c9973f',
+  F: '#f472b6',
+  M: '#38bdf8',
+  other: '#fbbf24',
 }
 
 export default function PersonNode3D({ node, onSelect }) {
@@ -30,19 +30,19 @@ export default function PersonNode3D({ node, onSelect }) {
         <icosahedronGeometry args={[0.32, 1]} />
         <meshStandardMaterial
           color={color}
-          emissive={person.isRoot ? '#e8c874' : '#000000'}
-          emissiveIntensity={person.isRoot ? 0.4 : 0}
-          roughness={0.5}
+          emissive={person.isRoot ? '#fde68a' : color}
+          emissiveIntensity={person.isRoot ? 0.9 : 0.5}
+          roughness={0.35}
         />
       </mesh>
       <Text
         position={[0, -0.55, 0]}
         fontSize={0.22}
-        color="#3f2f1c"
+        color="#e2f4ff"
         anchorX="center"
         anchorY="top"
-        outlineWidth={0.012}
-        outlineColor="#fdf6e3"
+        outlineWidth={0.015}
+        outlineColor="#020306"
       >
         {person.nickname || person.fullName}
       </Text>

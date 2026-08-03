@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { APP_PASSWORD } from './password'
+import HolographicBackground from '../components/layout/HolographicBackground'
 
 const STORAGE_KEY = 'treeUnlocked'
 
@@ -23,15 +24,16 @@ export default function PasswordGate({ children }) {
   if (unlocked) return children
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-stone-50 px-6 dark:bg-stone-900">
+    <div className="flex min-h-svh items-center justify-center px-6 text-slate-100">
+      <HolographicBackground />
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xs rounded-2xl bg-white p-6 shadow-sm dark:bg-stone-800"
+        className="w-full max-w-xs rounded-2xl border border-cyan-400/15 bg-slate-900/60 p-6 shadow-[0_0_35px_-8px_rgba(34,211,238,0.25)] backdrop-blur-md"
       >
-        <h1 className="mb-1 text-center text-lg font-semibold text-stone-800 dark:text-stone-100">
+        <h1 className="mb-1 text-center text-lg font-semibold text-slate-100">
           Árvore da Família Mostafá
         </h1>
-        <p className="mb-4 text-center text-sm text-stone-500 dark:text-stone-400">
+        <p className="mb-4 text-center text-sm text-slate-400">
           Digite a senha pra entrar
         </p>
         <input
@@ -42,15 +44,15 @@ export default function PasswordGate({ children }) {
             setInput(e.target.value)
             setError(false)
           }}
-          className="w-full rounded-lg border border-stone-300 px-4 py-3 text-base outline-none focus:border-stone-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
+          className="w-full rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-3 text-base text-slate-100 outline-none focus:border-cyan-400/60"
           placeholder="Senha"
         />
         {error && (
-          <p className="mt-2 text-sm text-red-500">Senha incorreta.</p>
+          <p className="mt-2 text-sm text-red-400">Senha incorreta.</p>
         )}
         <button
           type="submit"
-          className="mt-4 w-full rounded-lg bg-stone-800 py-3 text-base font-medium text-white active:bg-stone-700 dark:bg-stone-100 dark:text-stone-900"
+          className="mt-4 w-full rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 py-3 text-base font-medium text-slate-950 shadow-[0_0_20px_-4px_rgba(34,211,238,0.5)] active:opacity-90"
         >
           Entrar
         </button>

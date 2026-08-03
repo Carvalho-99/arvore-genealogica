@@ -45,12 +45,12 @@ export default function TreeBuilderPage() {
   if (people.length === 0) {
     return (
       <div className="mt-16 text-center">
-        <p className="mb-4 text-stone-500 dark:text-stone-400">
+        <p className="mb-4 text-slate-400">
           A árvore ainda está vazia. Comece cadastrando a primeira pessoa.
         </p>
         <button
           onClick={() => setEditing(true)}
-          className="rounded-lg bg-stone-800 px-5 py-3 text-sm font-medium text-white dark:bg-stone-100 dark:text-stone-900"
+          className="rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 px-5 py-3 text-sm font-medium text-slate-950"
         >
           Adicionar primeira pessoa
         </button>
@@ -82,14 +82,14 @@ export default function TreeBuilderPage() {
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={() => rootPerson && navigate(`/pessoa/${rootPerson.id}`)}
-          className="rounded-full px-2 py-1 text-xl active:bg-stone-100 dark:active:bg-stone-800"
+          className="rounded-full px-2 py-1 text-xl text-slate-300 active:bg-slate-800"
           aria-label="Ir para o início"
         >
           🏠
         </button>
         <button
           onClick={() => setShowListView(true)}
-          className="rounded-full px-2 py-1 text-xl active:bg-stone-100 dark:active:bg-stone-800"
+          className="rounded-full px-2 py-1 text-xl text-slate-300 active:bg-slate-800"
           aria-label="Buscar pessoa"
         >
           🔍
@@ -106,7 +106,7 @@ export default function TreeBuilderPage() {
 
       <button
         onClick={() => setQuickAddOpen(true)}
-        className="fixed bottom-20 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-stone-800 text-2xl text-white shadow-lg active:bg-stone-700 dark:bg-stone-100 dark:text-stone-900"
+        className="fixed bottom-20 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-amber-300 text-2xl text-slate-950 shadow-[0_0_25px_-4px_rgba(34,211,238,0.6)]"
         aria-label="Adicionar pessoa"
       >
         +
@@ -143,7 +143,7 @@ export default function TreeBuilderPage() {
               <button
                 key={opt.type}
                 onClick={() => setQuickAddRelation(opt.type)}
-                className="rounded-lg bg-stone-100 py-3 text-sm font-medium text-stone-700 active:bg-stone-200 dark:bg-stone-700 dark:text-stone-200"
+                className="rounded-lg border border-cyan-400/15 bg-slate-800/80 py-3 text-sm font-medium text-cyan-200 active:bg-slate-700"
               >
                 {opt.label}
               </button>

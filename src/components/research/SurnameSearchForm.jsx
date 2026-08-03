@@ -1,5 +1,8 @@
 import { useState } from 'react'
 
+const inputClass =
+  'rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-base text-slate-100 outline-none focus:border-cyan-400/60'
+
 export default function SurnameSearchForm({ defaultValue, onSearch }) {
   const [surname, setSurname] = useState(defaultValue)
   const [forename, setForename] = useState('')
@@ -15,12 +18,12 @@ export default function SurnameSearchForm({ defaultValue, onSearch }) {
         <input
           value={surname}
           onChange={(e) => setSurname(e.target.value)}
-          className="flex-1 rounded-lg border border-stone-300 px-4 py-2.5 text-base outline-none focus:border-stone-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
+          className={`flex-1 ${inputClass}`}
           placeholder="Sobrenome"
         />
         <button
           type="submit"
-          className="rounded-lg bg-stone-800 px-4 py-2.5 text-sm font-medium text-white active:bg-stone-700 dark:bg-stone-100 dark:text-stone-900"
+          className="rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 px-4 py-2.5 text-sm font-medium text-slate-950"
         >
           Buscar
         </button>
@@ -28,7 +31,7 @@ export default function SurnameSearchForm({ defaultValue, onSearch }) {
       <input
         value={forename}
         onChange={(e) => setForename(e.target.value)}
-        className="w-full rounded-lg border border-stone-300 px-4 py-2.5 text-base outline-none focus:border-stone-500 dark:border-stone-600 dark:bg-stone-700 dark:text-stone-100"
+        className={`w-full ${inputClass}`}
         placeholder="Primeiro nome (opcional, pra ver a nacionalidade provável)"
       />
     </form>
