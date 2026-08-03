@@ -45,12 +45,12 @@ export default function TreeBuilderPage() {
   if (people.length === 0) {
     return (
       <div className="mt-16 text-center">
-        <p className="mb-4 text-slate-400">
+        <p className="mb-4 text-stone-600">
           A árvore ainda está vazia. Comece cadastrando a primeira pessoa.
         </p>
         <button
           onClick={() => setEditing(true)}
-          className="rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 px-5 py-3 text-sm font-medium text-slate-950"
+          className="rounded-lg bg-gradient-to-r from-green-700 to-green-600 px-5 py-3 text-sm font-medium text-amber-50"
         >
           Adicionar primeira pessoa
         </button>
@@ -82,14 +82,14 @@ export default function TreeBuilderPage() {
       <div className="mb-3 flex items-center justify-between">
         <button
           onClick={() => rootPerson && navigate(`/pessoa/${rootPerson.id}`)}
-          className="rounded-full px-2 py-1 text-xl text-slate-300 active:bg-slate-800"
+          className="rounded-full px-2 py-1 text-xl text-stone-600 active:bg-amber-100/70"
           aria-label="Ir para o início"
         >
           🏠
         </button>
         <button
           onClick={() => setShowListView(true)}
-          className="rounded-full px-2 py-1 text-xl text-slate-300 active:bg-slate-800"
+          className="rounded-full px-2 py-1 text-xl text-stone-600 active:bg-amber-100/70"
           aria-label="Buscar pessoa"
         >
           🔍
@@ -106,7 +106,7 @@ export default function TreeBuilderPage() {
 
       <button
         onClick={() => setQuickAddOpen(true)}
-        className="fixed bottom-20 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-amber-300 text-2xl text-slate-950 shadow-[0_0_25px_-4px_rgba(34,211,238,0.6)]"
+        className="fixed bottom-20 right-5 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-green-700 to-green-600 text-2xl text-amber-50 shadow-lg"
         aria-label="Adicionar pessoa"
       >
         +
@@ -143,7 +143,7 @@ export default function TreeBuilderPage() {
               <button
                 key={opt.type}
                 onClick={() => setQuickAddRelation(opt.type)}
-                className="rounded-lg border border-cyan-400/15 bg-slate-800/80 py-3 text-sm font-medium text-cyan-200 active:bg-slate-700"
+                className="rounded-lg border border-green-700/15 bg-white/70 py-3 text-sm font-medium text-green-800 active:bg-amber-100/70"
               >
                 {opt.label}
               </button>

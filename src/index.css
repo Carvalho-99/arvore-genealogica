@@ -7,37 +7,14 @@ html, body, #root {
 body {
   margin: 0;
   overscroll-behavior-y: none;
-  background: #05070d;
+  background: #e8d9ab;
 }
 
-@keyframes holo-pulse {
-  0%, 100% { opacity: 0.55; }
-  50% { opacity: 1; }
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(-1.5deg) translateX(-3px); }
+  50% { transform: rotate(1.5deg) translateX(3px); }
 }
 
-@keyframes holo-flow {
-  to { stroke-dashoffset: -240; }
-}
-
-@keyframes holo-node {
-  0%, 100% { opacity: 0.4; transform: scale(0.85); }
-  50% { opacity: 1; transform: scale(1.15); }
-}
-
-@keyframes holo-twinkle {
-  0%, 100% { opacity: 0.15; }
-  50% { opacity: 0.85; }
-}
-
-.holo-branch {
-  animation: holo-pulse 5s ease-in-out infinite, holo-flow 6s linear infinite;
-}
-
-.holo-node {
-  animation: holo-node 3.5s ease-in-out infinite;
-  transform-origin: center;
-}
-
-.holo-star {
-  animation: holo-twinkle 3s ease-in-out infinite;
+.sway-leaf {
+  animation: leaf-sway 6s ease-in-out infinite;
 }

@@ -17,8 +17,8 @@ const relationTitles = {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-slate-700 bg-slate-800/70 px-3 py-2.5 text-base text-slate-100 outline-none focus:border-cyan-400/60'
-const labelClass = 'mb-1 block text-xs font-medium text-slate-400'
+  'w-full rounded-lg border border-amber-800/25 bg-white/70 px-3 py-2.5 text-base text-stone-800 outline-none focus:border-green-700/60'
+const labelClass = 'mb-1 block text-xs font-medium text-stone-500'
 
 export default function PersonForm({ person = null, linkContext = null, onClose, onSaved }) {
   const { getPerson } = usePeople()
@@ -185,7 +185,7 @@ export default function PersonForm({ person = null, linkContext = null, onClose,
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 py-3 text-base font-medium text-slate-950 shadow-[0_0_20px_-4px_rgba(34,211,238,0.4)] disabled:opacity-50"
+          className="w-full rounded-lg bg-gradient-to-r from-green-700 to-green-600 py-3 text-base font-medium text-amber-50 shadow disabled:opacity-50"
         >
           {saving ? 'Salvando...' : 'Salvar'}
         </button>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 const inputClass =
-  'rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-base text-slate-100 outline-none focus:border-cyan-400/60'
+  'rounded-lg border border-amber-800/25 bg-white/70 px-4 py-2.5 text-base text-stone-800 outline-none focus:border-green-700/60'
 
 export default function SurnameSearchForm({ defaultValue, onSearch }) {
   const [surname, setSurname] = useState(defaultValue)
@@ -23,7 +23,7 @@ export default function SurnameSearchForm({ defaultValue, onSearch }) {
         />
         <button
           type="submit"
-          className="rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 px-4 py-2.5 text-sm font-medium text-slate-950"
+          className="rounded-lg bg-gradient-to-r from-green-700 to-green-600 px-4 py-2.5 text-sm font-medium text-amber-50"
         >
           Buscar
         </button>

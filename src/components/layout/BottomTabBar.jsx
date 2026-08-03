@@ -9,7 +9,7 @@ const tabs = [
 export default function BottomTabBar() {
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-20 flex border-t border-cyan-400/20 bg-slate-950/80 backdrop-blur-md"
+      className="fixed inset-x-0 bottom-0 z-20 flex border-t border-amber-800/15 bg-amber-50/90 backdrop-blur-md"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {tabs.map((tab) => (
@@ -19,9 +19,7 @@ export default function BottomTabBar() {
           end={tab.end}
           className={({ isActive }) =>
             `flex flex-1 flex-col items-center gap-0.5 py-2.5 text-xs font-medium transition-colors ${
-              isActive
-                ? 'text-cyan-300 [text-shadow:0_0_10px_rgba(34,211,238,0.6)]'
-                : 'text-slate-500'
+              isActive ? 'text-green-700' : 'text-stone-400'
             }`
           }
         >

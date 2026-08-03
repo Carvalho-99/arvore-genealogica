@@ -48,7 +48,7 @@ export default function ResearchHubPage() {
 
   return (
     <div>
-      <h1 className="mb-3 text-lg font-semibold text-slate-100">
+      <h1 className="mb-3 text-lg font-semibold text-stone-800">
         Central de Pesquisa
       </h1>
       <SurnameSearchForm defaultValue={surname} onSearch={handleSearch} />
@@ -85,7 +85,7 @@ export default function ResearchHubPage() {
       )}
 
       {nothingFound && (
-        <p className="py-6 text-center text-sm text-slate-500">
+        <p className="py-6 text-center text-sm text-stone-500">
           Não encontramos nada de público sobre "{surname}" nessas fontes.
         </p>
       )}

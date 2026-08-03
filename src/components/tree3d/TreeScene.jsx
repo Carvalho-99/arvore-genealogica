@@ -1,20 +1,22 @@
 import { Line, QuadraticBezierLine } from '@react-three/drei'
 import PersonNode3D from './PersonNode3D'
+import FallingLeaves from './FallingLeaves'
 
-export default function TreeScene({ nodes, edges, onSelect }) {
+export default function TreeScene({ nodes, edges, onSelect, leavesRef }) {
   const minY = nodes.reduce((min, n) => Math.min(min, n.y), 0)
 
+  function handleBackgroundClick(e) {
+    e.stopPropagation()
+    const p = e.point
+    leavesRef.current?.burst([p.x, p.y, p.z])
+  }
+
   return (
-    <group>
+    <group onClick={handleBackgroundClick}>
       {/* tronco decorativo, só pra ancorar visualmente a base da árvore */}
       <mesh position={[0, (minY - 1.2) / 2, 0]}>
         <cylinderGeometry args={[0.16, 0.3, Math.abs(minY - 1.2) + 0.4, 8]} />
-        <meshStandardMaterial
-          color="#0e1522"
-          emissive="#0891b2"
-          emissiveIntensity={0.25}
-          roughness={0.6}
-        />
+        <meshStandardMaterial color="#5a3d24" roughness={0.85} />
       </mesh>
 
       {edges.map((edge, i) =>
@@ -28,8 +30,8 @@ export default function TreeScene({ nodes, edges, onSelect }) {
               (edge.from.y + edge.to.y) / 2,
               (edge.from.z + edge.to.z) / 2 + 0.6,
             ]}
-            color="#22d3ee"
-            lineWidth={1.5}
+            color="#6b4a2f"
+            lineWidth={2}
           />
         ) : (
           <Line
@@ -38,10 +40,8 @@ export default function TreeScene({ nodes, edges, onSelect }) {
               [edge.from.x, edge.from.y, edge.from.z],
               [edge.to.x, edge.to.y, edge.to.z],
             ]}
-            color="#fbbf24"
+            color="#a8763f"
             lineWidth={1.5}
-            dashed
-            dashScale={8}
           />
         )
       )}
@@ -49,6 +49,8 @@ export default function TreeScene({ nodes, edges, onSelect }) {
       {nodes.map((node) => (
         <PersonNode3D key={node.id} node={node} onSelect={onSelect} />
       ))}
+
+      <FallingLeaves ref={leavesRef} />
     </group>
   )
 }

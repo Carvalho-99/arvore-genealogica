@@ -102,7 +102,7 @@ export default function RelationshipModal({
     <Modal title={titles[relationType]} onClose={onClose}>
       <div className="mb-3 space-y-1">
         {linked.length === 0 && (
-          <p className="py-2 text-center text-sm text-slate-500">
+          <p className="py-2 text-center text-sm text-stone-500">
             Ninguém vinculado ainda.
           </p>
         )}
@@ -116,14 +116,14 @@ export default function RelationshipModal({
                 onNavigate(p.id)
                 onClose()
               }}
-              className="flex-1 rounded-lg px-2 py-1.5 text-left text-sm text-slate-200 active:bg-slate-800"
+              className="flex-1 rounded-lg px-2 py-1.5 text-left text-sm text-stone-700 active:bg-amber-100/70"
             >
               {p.fullName}
             </button>
             {canUnlink && (
               <button
                 onClick={() => handleUnlink(p.id)}
-                className="px-2 text-xs text-slate-500 active:text-red-400"
+                className="px-2 text-xs text-stone-500 active:text-red-500"
               >
                 remover
               </button>
@@ -135,13 +135,13 @@ export default function RelationshipModal({
       <div className="flex gap-2">
         <button
           onClick={() => setShowForm(true)}
-          className="flex-1 rounded-lg bg-gradient-to-r from-cyan-400 to-amber-300 py-2.5 text-sm font-medium text-slate-950"
+          className="flex-1 rounded-lg bg-gradient-to-r from-green-700 to-green-600 py-2.5 text-sm font-medium text-amber-50"
         >
           + Adicionar novo
         </button>
         <button
           onClick={() => setShowPicker(true)}
-          className="flex-1 rounded-lg border border-cyan-400/20 bg-slate-800/80 py-2.5 text-sm font-medium text-cyan-200"
+          className="flex-1 rounded-lg border border-green-700/20 bg-white/70 py-2.5 text-sm font-medium text-green-800"
         >
           🔗 Vincular existente
         </button>

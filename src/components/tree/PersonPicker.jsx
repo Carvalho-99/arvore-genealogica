@@ -18,11 +18,11 @@ export default function PersonPicker({ title, excludeIds = [], onSelect, onClose
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Buscar por nome..."
-        className="mb-3 w-full rounded-lg border border-slate-700 bg-slate-800/70 px-4 py-2.5 text-base text-slate-100 outline-none focus:border-cyan-400/60"
+        className="mb-3 w-full rounded-lg border border-amber-800/25 bg-white/70 px-4 py-2.5 text-base text-stone-800 outline-none focus:border-green-700/60"
       />
       <div className="max-h-64 space-y-1 overflow-y-auto">
         {results.length === 0 && (
-          <p className="py-4 text-center text-sm text-slate-500">
+          <p className="py-4 text-center text-sm text-stone-500">
             Ninguém encontrado.
           </p>
         )}
@@ -30,7 +30,7 @@ export default function PersonPicker({ title, excludeIds = [], onSelect, onClose
           <button
             key={p.id}
             onClick={() => onSelect(p.id)}
-            className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-slate-200 active:bg-slate-800"
+            className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-stone-700 active:bg-amber-100/70"
           >
             {p.fullName}
           </button>

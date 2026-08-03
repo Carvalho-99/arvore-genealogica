@@ -1,4 +1,4 @@
-import { Suspense, useMemo } from 'react'
+import { Suspense, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
@@ -10,6 +10,7 @@ import LoadingSpinner from '../common/LoadingSpinner'
 export default function Tree3DPage() {
   const { people, loading, rootPerson } = usePeople()
   const navigate = useNavigate()
+  const leavesRef = useRef()
 
   const layout = useMemo(
     () => (rootPerson ? computeTreeLayout(people, rootPerson.id) : { nodes: [], edges: [] }),
@@ -30,7 +31,7 @@ export default function Tree3DPage() {
 
   if (!rootPerson) {
     return (
-      <div className="mt-16 text-center text-sm text-slate-400">
+      <div className="mt-16 text-center text-sm text-stone-500">
         Cadastre pelo menos uma pessoa na aba Árvore pra ver a visão 3D.
       </div>
     )
@@ -45,13 +46,18 @@ export default function Tree3DPage() {
             fov: 50,
           }}
           gl={{ preserveDrawingBuffer: true, alpha: true }}
+          onPointerMissed={() => leavesRef.current?.burst([0, centerY + 1, 0])}
         >
           <Suspense fallback={null}>
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[5, centerY + 6, 4]} intensity={1} color="#bae6fd" />
-            <pointLight position={[0, centerY, 0]} intensity={0.6} color="#fbbf24" />
-            <fog attach="fog" args={['#060a15', camDistance * 1.4, camDistance * 3.4]} />
-            <TreeScene nodes={layout.nodes} edges={layout.edges} onSelect={(id) => navigate(`/pessoa/${id}`)} />
+            <ambientLight intensity={0.75} />
+            <directionalLight position={[5, centerY + 6, 4]} intensity={1} color="#fff2d0" />
+            <fog attach="fog" args={['#e8d9ab', camDistance * 1.4, camDistance * 3.4]} />
+            <TreeScene
+              nodes={layout.nodes}
+              edges={layout.edges}
+              onSelect={(id) => navigate(`/pessoa/${id}`)}
+              leavesRef={leavesRef}
+            />
             <OrbitControls
               target={[0, centerY, 0]}
               enablePan={false}
@@ -65,9 +71,6 @@ export default function Tree3DPage() {
           </Suspense>
         </Canvas>
       </div>
-      <p className="px-4 pt-2 text-center text-xs text-slate-400">
-        Arraste pra girar a árvore, toque numa pessoa pra abrir o cartão dela.
-      </p>
     </div>
   )
 }
