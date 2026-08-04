@@ -18,3 +18,17 @@ body {
 .sway-leaf {
   animation: leaf-sway 6s ease-in-out infinite;
 }
+
+@keyframes leaf-fall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--drift), 180px) rotate(360deg); opacity: 0; }
+}
+
+.leaf-particle {
+  position: absolute;
+  width: 9px;
+  height: 12px;
+  border-radius: 0 60% 0 60%;
+  pointer-events: none;
+  animation: leaf-fall var(--dur) ease-in forwards;
+}
