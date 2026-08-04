@@ -156,6 +156,27 @@ export function computeTreeLayout(people, rootId) {
   return { nodes, edges, width, height }
 }
 
+// A árvore nunca é redimensionada em função de quantas pessoas existem —
+// a cena (câmera + fundo) é sempre do tamanho da viewport. Em vez disso,
+// encaixamos a árvore (que tem seu próprio tamanho "natural" calculado
+// acima) dentro da viewport disponível, crescendo/encolhendo as placas
+// junto (um family menor aparece um pouco maior, um family grande aparece
+// mais compacto, mas sempre nítido e nunca cortado).
+export function fitLayoutToViewport(layout, viewportWidth, viewportHeight) {
+  if (!layout.nodes.length || !viewportWidth || !viewportHeight) {
+    return { scale: 1, offsetX: 0, offsetY: 0 }
+  }
+  const marginRatio = 0.8
+  const scaleX = (viewportWidth * marginRatio) / layout.width
+  const scaleY = (viewportHeight * marginRatio) / layout.height
+  let scale = Math.min(scaleX, scaleY)
+  scale = Math.min(scale, 1.3)
+  scale = Math.max(scale, 0.22)
+  const offsetX = (viewportWidth - layout.width * scale) / 2
+  const offsetY = (viewportHeight - layout.height * scale) / 2
+  return { scale, offsetX, offsetY }
+}
+
 function spouseSpan(memberCount) {
   return memberCount * SLOT_WIDTH + (memberCount - 1) * SPOUSE_GAP
 }

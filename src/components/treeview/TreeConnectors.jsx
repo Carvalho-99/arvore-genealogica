@@ -7,6 +7,11 @@ export default function TreeConnectors({ edges, width, height }) {
       style={{ overflow: 'visible' }}
       aria-hidden="true"
     >
+      <defs>
+        <filter id="branchShadow" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#000" floodOpacity="0.35" />
+        </filter>
+      </defs>
       {edges.map((edge, i) =>
         edge.type === 'spouse' ? (
           <line
@@ -15,21 +20,39 @@ export default function TreeConnectors({ edges, width, height }) {
             y1={edge.y1}
             x2={edge.x2}
             y2={edge.y2}
-            stroke="#caa25c"
-            strokeWidth={2}
+            stroke="#d3ab63"
+            strokeWidth={2.5}
             strokeLinecap="round"
-            opacity={0.75}
+            opacity={0.8}
           />
         ) : (
-          <path
-            key={i}
-            d={branchPath(edge)}
-            fill="none"
-            stroke="#5b4022"
-            strokeWidth={2.4}
-            strokeLinecap="round"
-            opacity={0.65}
-          />
+          <g key={i} filter="url(#branchShadow)">
+            <path
+              d={branchPath(edge)}
+              fill="none"
+              stroke="#3d2a15"
+              strokeWidth={7}
+              strokeLinecap="round"
+              opacity={0.6}
+            />
+            <path
+              d={branchPath(edge)}
+              fill="none"
+              stroke="#8a6338"
+              strokeWidth={3}
+              strokeLinecap="round"
+              opacity={0.55}
+            />
+            <path
+              d={branchPath(edge)}
+              fill="none"
+              stroke="#caa66c"
+              strokeWidth={1.1}
+              strokeLinecap="round"
+              opacity={0.4}
+              transform="translate(-1,-1)"
+            />
+          </g>
         )
       )}
     </svg>

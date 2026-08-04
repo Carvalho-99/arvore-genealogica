@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react'
 
-const MIN_SCALE = 0.35
-const MAX_SCALE = 2.2
+// A câmera nunca reduz a cena abaixo do tamanho da viewport — o "mundo" é
+// sempre do tamanho da tela (worldSize = viewport), e o zoom só amplia a
+// partir daí (scale >= 1). Isso garante matematicamente que o fundo nunca
+// deixa de cobrir 100% da tela, então nunca aparece nada "atrás" dele e
+// nunca precisa de barra de rolagem.
+const MIN_SCALE = 1
+const MAX_SCALE = 3.2
 
-// Pan + zoom (arrastar, roda do mouse, pinça no touch) escrito na unha, sem
-// libs — mantém tudo num ref e escreve direto no transform do DOM a cada
-// frame, sem passar pelo ciclo de render do React (senão o arrasto fica
-// engasgado no celular).
 export function usePanZoom({ containerRef, worldRef, worldSize }) {
-  const transform = useRef({ x: 0, y: 0, scale: 0.62 })
+  const transform = useRef({ x: 0, y: 0, scale: 1 })
   const pointers = useRef(new Map())
   const gesture = useRef(null)
   const animRef = useRef(null)
@@ -23,26 +24,19 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
     [worldRef]
   )
 
+  // com o mundo do tamanho da viewport, o range de arrasto permitido em cada
+  // eixo é só o quanto o zoom "sobrou" além da tela: (tamanho*scale - tamanho)/2
   function clamp() {
-    const container = containerRef.current
-    if (!container) return
     const { scale } = transform.current
     transform.current.scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale))
 
-    const vw = container.clientWidth
-    const vh = container.clientHeight
-    const worldW = worldSize.width * transform.current.scale
-    const worldH = worldSize.height * transform.current.scale
+    const vw = worldSize.width
+    const vh = worldSize.height
+    const slackX = (vw * transform.current.scale - vw) / 2
+    const slackY = (vh * transform.current.scale - vh) / 2
 
-    // deixa sempre pelo menos uma faixa da árvore visível, mesmo arrastando pro limite
-    const slack = 220
-    const minX = Math.min(vw - worldW - slack, vw / 2 - worldW / 2)
-    const maxX = Math.max(slack, vw / 2 - worldW / 2)
-    const minY = Math.min(vh - worldH - slack, vh / 2 - worldH / 2)
-    const maxY = Math.max(slack, vh / 2 - worldH / 2)
-
-    transform.current.x = Math.min(maxX, Math.max(minX, transform.current.x))
-    transform.current.y = Math.min(maxY, Math.max(minY, transform.current.y))
+    transform.current.x = Math.min(slackX, Math.max(-slackX, transform.current.x))
+    transform.current.y = Math.min(slackY, Math.max(-slackY, transform.current.y))
   }
 
   function stopAnim() {
@@ -53,19 +47,24 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
   }
 
   function centerOnPoint(px, py, targetScale) {
-    const container = containerRef.current
-    if (!container) return
+    const vw = worldSize.width
+    const vh = worldSize.height
+    if (!vw || !vh) return
     stopAnim()
-    const vw = container.clientWidth
-    const vh = container.clientHeight
-    const scale = targetScale ?? Math.max(transform.current.scale, 0.85)
+    const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, targetScale ?? Math.max(transform.current.scale, 1.4)))
 
     const from = { ...transform.current }
+    // desloca o suficiente pra levar o ponto (px,py) do mundo pro centro da viewport
     const to = {
       scale,
       x: vw / 2 - px * scale,
       y: vh / 2 - py * scale,
     }
+
+    const slackX = (vw * scale - vw) / 2
+    const slackY = (vh * scale - vh) / 2
+    to.x = Math.min(slackX, Math.max(-slackX, to.x))
+    to.y = Math.min(slackY, Math.max(-slackY, to.y))
 
     const duration = 620
     const start = performance.now()
@@ -83,17 +82,9 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
     animRef.current = requestAnimationFrame(tick)
   }
 
-  function fitToViewport() {
-    const container = containerRef.current
-    if (!container) return
-    const vw = container.clientWidth
-    const vh = container.clientHeight
-    const scale = Math.min(1, Math.min(vw / worldSize.width, (vh * 1.6) / worldSize.height))
-    transform.current = {
-      scale: Math.max(MIN_SCALE, scale),
-      x: vw / 2 - (worldSize.width / 2) * scale,
-      y: vh * 0.16,
-    }
+  function resetView() {
+    stopAnim()
+    transform.current = { x: 0, y: 0, scale: 1 }
     apply()
   }
 
@@ -132,6 +123,7 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
       if (g.type === 'pan' && pointers.current.size === 1) {
         transform.current.x = g.origin.x + (e.clientX - g.startX)
         transform.current.y = g.origin.y + (e.clientY - g.startY)
+        clampSoft()
         apply()
       } else if (g.type === 'pinch' && pointers.current.size === 2) {
         const [a, b] = [...pointers.current.values()]
@@ -146,8 +138,20 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
         transform.current.scale = newScale
         transform.current.x = anchorX - worldX * newScale
         transform.current.y = anchorY - worldY * newScale
+        clamp()
         apply()
       }
+    }
+
+    // durante o próprio gesto, deixa passar um pouco do limite (sensação
+    // elástica) — o clamp "duro" só entra ao soltar, em clamp()
+    function clampSoft() {
+      const vw = worldSize.width
+      const vh = worldSize.height
+      const slackX = (vw * transform.current.scale - vw) / 2 + 60
+      const slackY = (vh * transform.current.scale - vh) / 2 + 60
+      transform.current.x = Math.min(slackX, Math.max(-slackX, transform.current.x))
+      transform.current.y = Math.min(slackY, Math.max(-slackY, transform.current.y))
     }
 
     function endPointer(e) {
@@ -175,6 +179,7 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
       transform.current.scale = newScale
       transform.current.x = anchorX - worldX * newScale
       transform.current.y = anchorY - worldY * newScale
+      clamp()
       apply()
     }
 
@@ -192,9 +197,9 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
       container.removeEventListener('wheel', onWheel)
       stopAnim()
     }
-  }, [containerRef, apply])
+  }, [containerRef, apply, worldSize.width, worldSize.height])
 
-  return { centerOnPoint, fitToViewport, transformRef: transform }
+  return { centerOnPoint, resetView, transformRef: transform }
 }
 
 function distance(a, b) {
