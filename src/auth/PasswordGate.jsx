@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { APP_PASSWORD } from './password'
-import AppBackground from '../components/layout/AppBackground'
 
 const STORAGE_KEY = 'treeUnlocked'
+const base = import.meta.env.BASE_URL
 
 export default function PasswordGate({ children }) {
   const [unlocked, setUnlocked] = useState(
@@ -24,16 +24,21 @@ export default function PasswordGate({ children }) {
   if (unlocked) return children
 
   return (
-    <div className="flex min-h-svh items-center justify-center px-6 text-stone-800">
-      <AppBackground />
+    <div className="relative flex min-h-svh items-center justify-center overflow-hidden px-6" style={{ background: '#0b0902' }}>
+      <img
+        src={`${base}hero.jpg`}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover opacity-50"
+      />
+      <div className="hero-vignette" />
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xs rounded-2xl border border-amber-800/15 bg-amber-50/85 p-6 shadow-lg backdrop-blur-md"
+        className="relative z-10 w-full max-w-xs rounded-2xl border border-amber-100/15 bg-black/55 p-7 text-center shadow-2xl backdrop-blur-md"
       >
-        <h1 className="mb-1 text-center text-lg font-semibold text-stone-800">
+        <h1 className="font-serif-display text-lg text-amber-50">
           Árvore da Família Mostafá
         </h1>
-        <p className="mb-4 text-center text-sm text-stone-500">
+        <p className="mb-4 mt-1 text-sm text-amber-100/60">
           Digite a senha pra entrar
         </p>
         <input
@@ -44,14 +49,11 @@ export default function PasswordGate({ children }) {
             setInput(e.target.value)
             setError(false)
           }}
-          className="w-full rounded-lg border border-amber-800/25 bg-white/70 px-4 py-3 text-base text-stone-800 outline-none focus:border-green-700/60"
+          className="form-input text-center"
           placeholder="Senha"
         />
-        {error && <p className="mt-2 text-sm text-red-600">Senha incorreta.</p>}
-        <button
-          type="submit"
-          className="mt-4 w-full rounded-lg bg-gradient-to-r from-green-700 to-green-600 py-3 text-base font-medium text-amber-50 shadow active:opacity-90"
-        >
+        {error && <p className="mt-2 text-sm text-red-300">Senha incorreta.</p>}
+        <button type="submit" className="btn-gold mt-4 w-full">
           Entrar
         </button>
       </form>
