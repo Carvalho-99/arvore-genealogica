@@ -102,6 +102,11 @@ export function usePanZoom({ containerRef, worldRef, worldSize }) {
     if (!container) return
 
     function onPointerDown(e) {
+      // pressionar um botão (placa, etc.) não deve virar gesto de arrastar —
+      // setPointerCapture no container rouba o clique do botão se a gente
+      // capturar aqui também, então deixa o clique nativo acontecer sozinho.
+      if (e.target.closest('button, a')) return
+
       container.setPointerCapture(e.pointerId)
       pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
       stopAnim()
