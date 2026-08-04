@@ -284,9 +284,82 @@ body {
 
 .parallax-layer {
   position: absolute;
-  inset: 0;
-  transition: transform 0.2s ease-out;
+  inset: -3%;
+  transition: transform 0.45s ease-out;
   will-change: transform;
+}
+
+.scene-crossfade {
+  transition: opacity 2.6s ease;
+}
+
+/* brilho no tronco, bem discreto, passando a cada ~24s */
+.trunk-shimmer {
+  position: relative;
+}
+.trunk-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 62%, rgba(255, 226, 160, 0.28), rgba(255, 226, 160, 0) 45%);
+  opacity: 0;
+  animation: trunk-glow 24s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes trunk-glow {
+  0%, 92%, 100% { opacity: 0; }
+  96% { opacity: 1; }
+}
+
+/* variação lenta de intensidade dos raios/efeitos de luz */
+.effects-pulse {
+  animation: effects-breathe 14s ease-in-out infinite;
+}
+@keyframes effects-breathe {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
+
+/* balanço quase imperceptível da folhagem */
+.layer-sway {
+  animation: foliage-sway 16s ease-in-out infinite;
+  transform-origin: 50% 30%;
+}
+@keyframes foliage-sway {
+  0%, 100% { transform: rotate(-0.35deg) translateX(-2px); }
+  50% { transform: rotate(0.35deg) translateX(2px); }
+}
+
+/* ---------- criaturas (borboletas / vagalumes) ---------- */
+
+.creature-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.creature {
+  position: absolute;
+  height: auto;
+}
+.butterfly-flutter {
+  animation: butterfly-flutter var(--dur) ease-in-out infinite;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+}
+@keyframes butterfly-flutter {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scaleX(1); }
+  25% { transform: translate(calc(var(--dx) * 0.5), calc(var(--dy) * -0.6)) rotate(4deg) scaleX(0.85); }
+  50% { transform: translate(var(--dx), var(--dy)) rotate(-3deg) scaleX(1); }
+  75% { transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.7)) rotate(2deg) scaleX(0.85); }
+}
+.firefly-drift {
+  animation: firefly-drift var(--dur) ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 230, 140, 0.85)) drop-shadow(0 0 12px rgba(255, 200, 100, 0.5));
+}
+@keyframes firefly-drift {
+  0%, 100% { transform: translate(0, 0); opacity: 0.35; }
+  20% { opacity: 0.95; }
+  50% { transform: translate(var(--dx), var(--dy)); opacity: 0.5; }
+  70% { opacity: 1; }
 }
 
 .light-rays {

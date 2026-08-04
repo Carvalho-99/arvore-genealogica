@@ -3,25 +3,28 @@ import { useNavigate } from 'react-router-dom'
 import { usePeople } from '../../context/PeopleContext'
 import { computeTreeLayout, fitLayoutToViewport } from '../../lib/treeLayout'
 import { usePanZoom } from '../../hooks/usePanZoom'
+import { useTimeOfDay } from '../../lib/timeOfDay'
+import { preloadImages } from '../../lib/preload'
 import PersonPlaque from './PersonPlaque'
 import TreeConnectors from './TreeConnectors'
 import AmbientLeaves from './AmbientLeaves'
-import LightRays from './LightRays'
 import DustParticles from './DustParticles'
+import SceneLayers, { periodImageUrls, sharedImageUrls } from './SceneLayers'
 import PersonDetailModal from './PersonDetailModal'
 import PersonFormModal from './PersonFormModal'
 import SearchOverlay from './SearchOverlay'
 import LoadingSpinner from '../common/LoadingSpinner'
 
 const base = import.meta.env.BASE_URL
+const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
 
 export default function TreeCanvasPage() {
   const { people, loading, rootPerson } = usePeople()
   const navigate = useNavigate()
+  const period = useTimeOfDay()
   const containerRef = useRef(null)
   const worldRef = useRef(null)
-  const bgRef = useRef(null)
-  const raysRef = useRef(null)
+  const sceneRef = useRef(null)
   const dustRef = useRef(null)
 
   const [selected, setSelected] = useState(null)
@@ -43,6 +46,18 @@ export default function TreeCanvasPage() {
     return () => observer.disconnect()
   }, [])
 
+  // esquenta o cache do navegador com as imagens do período atual na hora,
+  // e as dos outros 3 períodos aos poucos, sem competir com o carregamento
+  // inicial — assim a troca de cenário nunca trava.
+  useEffect(() => {
+    preloadImages([...sharedImageUrls(), ...periodImageUrls(period)])
+    const idle = setTimeout(() => {
+      ALL_PERIODS.filter((p) => p !== period).forEach((p) => preloadImages(periodImageUrls(p)))
+    }, 2500)
+    return () => clearTimeout(idle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const layout = useMemo(() => {
     if (!rootPerson) return { nodes: [], edges: [], width: 1600, height: 900 }
     return computeTreeLayout(people, rootPerson.id)
@@ -60,18 +75,22 @@ export default function TreeCanvasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rootPerson?.id])
 
-  // parallax passivo: cada camada de atmosfera se move um pouco ao mover o
+  // parallax passivo: cada camada da cena se move um pouco ao mover o
   // mouse, em velocidades diferentes, pra dar sensação de profundidade —
-  // igual à tela de abertura. As placas/galhos ficam de fora disso de
-  // propósito, pra continuar sempre clicáveis com precisão.
+  // igual à tela de abertura. As placas/galhos genealógicos ficam de fora
+  // disso de propósito, pra continuar sempre clicáveis com precisão.
   function handleMouseMove(e) {
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
     const px = (e.clientX - rect.left) / rect.width - 0.5
     const py = (e.clientY - rect.top) / rect.height - 0.5
-    if (bgRef.current) bgRef.current.style.transform = `translate(${px * -10}px, ${py * -7}px)`
-    if (raysRef.current) raysRef.current.style.transform = `translate(${px * -18}px, ${py * -12}px)`
-    if (dustRef.current) dustRef.current.style.transform = `translate(${px * -30}px, ${py * -20}px)`
+    sceneRef.current?.applyParallax(px, py)
+    if (dustRef.current) dustRef.current.style.transform = `translate(${px * -22}px, ${py * -15}px)`
+  }
+
+  function handleMouseLeave() {
+    sceneRef.current?.resetParallax()
+    if (dustRef.current) dustRef.current.style.transform = 'translate(0, 0)'
   }
 
   function screenPointOf(node) {
@@ -91,16 +110,19 @@ export default function TreeCanvasPage() {
 
   if (loading) return <LoadingSpinner />
 
+  const showDust = period === 'dia' || period === 'amanhecer'
+
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#0c0a06]">
       {people.length === 0 ? (
-        <EmptyForest onStart={() => setAdding(true)} />
+        <EmptyForest period={period} onStart={() => setAdding(true)} />
       ) : (
         <div
           ref={containerRef}
           className="absolute inset-0 touch-none select-none"
           style={{ cursor: 'grab' }}
           onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         >
           {viewport.width > 0 && (
             <div
@@ -108,23 +130,13 @@ export default function TreeCanvasPage() {
               className="absolute left-0 top-0 origin-top-left"
               style={{ width: viewport.width, height: viewport.height, willChange: 'transform' }}
             >
-              <div ref={bgRef} className="parallax-layer" style={{ inset: '-4%' }}>
-                <img
-                  src={`${base}tree-bg.jpg`}
-                  alt=""
-                  draggable={false}
-                  className="h-full w-full object-cover"
-                  style={{ filter: 'brightness(0.86) saturate(1.05)' }}
-                />
-              </div>
+              <SceneLayers ref={sceneRef} period={period} />
 
-              <div ref={raysRef} className="parallax-layer">
-                <LightRays />
-              </div>
-
-              <div ref={dustRef} className="parallax-layer">
-                <DustParticles count={14} />
-              </div>
+              {showDust && (
+                <div ref={dustRef} className="parallax-layer">
+                  <DustParticles count={14} />
+                </div>
+              )}
 
               <div className="tree-vignette-inner" />
 
@@ -224,11 +236,11 @@ export default function TreeCanvasPage() {
   )
 }
 
-function EmptyForest({ onStart }) {
+function EmptyForest({ period, onStart }) {
   return (
     <div className="relative flex h-full w-full items-center justify-center">
       <img
-        src={`${base}tree-bg.jpg`}
+        src={`${base}images/scenes/arvore_${period}.webp`}
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-70"
       />
