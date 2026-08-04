@@ -5,13 +5,14 @@ import { computeGenerations } from './layout'
 import { CANOPY_SLOTS, TRUNK_SLOT } from './treeFrameSlots'
 import LoadingSpinner from '../common/LoadingSpinner'
 
-const leafColors = ['#5c7a3d', '#729a4a', '#8ba85f', '#8b6b3d', '#c2a35a']
+const LEAF_COUNT = 22
 let leafId = 0
 
 export default function Tree3DPage() {
   const { people, loading, rootPerson } = usePeople()
   const navigate = useNavigate()
   const [leaves, setLeaves] = useState([])
+  const base = import.meta.env.BASE_URL
 
   const labels = useMemo(() => {
     if (!rootPerson) return []
@@ -32,19 +33,20 @@ export default function Tree3DPage() {
     const rect = e.currentTarget.getBoundingClientRect()
     const xPct = ((e.clientX - rect.left) / rect.width) * 100
     const yPct = ((e.clientY - rect.top) / rect.height) * 100
-    const batch = Array.from({ length: 10 }, () => ({
+    const batch = Array.from({ length: 9 }, () => ({
       id: leafId++,
       x: xPct + (Math.random() - 0.5) * 8,
       y: yPct,
       delay: Math.random() * 0.15,
-      dur: 1.5 + Math.random() * 0.8,
-      drift: (Math.random() - 0.5) * 70,
-      color: leafColors[Math.floor(Math.random() * leafColors.length)],
+      dur: 1.6 + Math.random() * 0.9,
+      drift: (Math.random() - 0.5) * 80,
+      spin: (Math.random() - 0.5) * 540,
+      leafNum: String(1 + Math.floor(Math.random() * LEAF_COUNT)).padStart(2, '0'),
     }))
     setLeaves((l) => [...l, ...batch])
     setTimeout(() => {
       setLeaves((l) => l.filter((leaf) => !batch.includes(leaf)))
-    }, 2600)
+    }, 2800)
   }
 
   if (loading) return <LoadingSpinner />
@@ -58,12 +60,14 @@ export default function Tree3DPage() {
   }
 
   return (
+    <div className="w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-amber-800/15 shadow-sm">
     <div
-      className="relative w-full select-none overflow-hidden rounded-2xl border border-amber-800/15 shadow-sm"
+      className="relative select-none"
+      style={{ width: 760 }}
       onClick={handleImageClick}
     >
       <img
-        src={`${import.meta.env.BASE_URL}tree-faces/front.jpg`}
+        src={`${base}tree.jpg`}
         alt="Árvore da família"
         className="block w-full"
         draggable={false}
@@ -80,8 +84,8 @@ export default function Tree3DPage() {
           style={{
             left: `${slot.x}%`,
             top: `${slot.y}%`,
-            fontSize: big ? '16px' : '10.5px',
-            maxWidth: big ? '55%' : '27%',
+            fontSize: big ? '19px' : '11.5px',
+            maxWidth: big ? '46%' : '15%',
           }}
         >
           {person.nickname || person.fullName}
@@ -89,19 +93,22 @@ export default function Tree3DPage() {
       ))}
 
       {leaves.map((leaf) => (
-        <span
+        <img
           key={leaf.id}
+          src={`${base}leaves/leaf-${leaf.leafNum}.png`}
+          alt=""
           className="leaf-particle"
           style={{
             left: `${leaf.x}%`,
             top: `${leaf.y}%`,
-            background: leaf.color,
             '--drift': `${leaf.drift}px`,
+            '--spin': `${leaf.spin}deg`,
             '--dur': `${leaf.dur}s`,
             animationDelay: `${leaf.delay}s`,
           }}
         />
       ))}
+    </div>
     </div>
   )
 }

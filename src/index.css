@@ -21,14 +21,13 @@ body {
 
 @keyframes leaf-fall {
   0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-  100% { transform: translate(var(--drift), 180px) rotate(360deg); opacity: 0; }
+  100% { transform: translate(var(--drift), 200px) rotate(var(--spin)); opacity: 0; }
 }
 
 .leaf-particle {
   position: absolute;
-  width: 9px;
-  height: 12px;
-  border-radius: 0 60% 0 60%;
+  width: 22px;
+  height: auto;
   pointer-events: none;
   animation: leaf-fall var(--dur) ease-in forwards;
 }
