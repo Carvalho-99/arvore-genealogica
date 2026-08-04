@@ -91,7 +91,7 @@ const SceneLayers = forwardRef(function SceneLayers({ period }, ref) {
       ))}
 
       <div ref={setRef(EFFECTS_LAYER.key)} className="parallax-layer">
-        <CrossfadeImage srcs={periodSrcMap(EFFECTS_LAYER.key)} activeKey={period} className="effects-pulse" blend />
+        <CrossfadeImage srcs={periodSrcMap(EFFECTS_LAYER.key)} activeKey={period} className="effects-pulse" />
       </div>
 
       <div ref={setRef(FRONT_LEAVES.key)} className="parallax-layer">
