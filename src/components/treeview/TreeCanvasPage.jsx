@@ -6,7 +6,7 @@ import { usePanZoom } from '../../hooks/usePanZoom'
 import { useTimeOfDay } from '../../lib/timeOfDay'
 import { preloadImages } from '../../lib/preload'
 import PersonPlaque from './PersonPlaque'
-import TreeConnectors from './TreeConnectors'
+import BranchConnectors from './BranchConnectors'
 import AmbientLeaves from './AmbientLeaves'
 import DustParticles from './DustParticles'
 import SceneLayers, { periodImageUrls, sharedImageUrls } from './SceneLayers'
@@ -18,6 +18,10 @@ import LoadingSpinner from '../common/LoadingSpinner'
 const base = import.meta.env.BASE_URL
 const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
 
+// zoom aplicado por modo, sobre a câmera do usuário — nunca muda o
+// enquadramento, só aproxima/afasta em torno do centro da tela
+const MODE_ZOOM = { cenario: 1, genealogia: 1.05, explorar: 1.175 }
+
 export default function TreeCanvasPage() {
   const { people, loading, rootPerson } = usePeople()
   const navigate = useNavigate()
@@ -27,6 +31,7 @@ export default function TreeCanvasPage() {
   const sceneRef = useRef(null)
   const dustRef = useRef(null)
 
+  const [mode, setMode] = useState('cenario') // 'cenario' | 'genealogia' | 'explorar'
   const [selected, setSelected] = useState(null)
   const [adding, setAdding] = useState(false)
   const [searching, setSearching] = useState(false)
@@ -101,6 +106,7 @@ export default function TreeCanvasPage() {
     const p = screenPointOf(node)
     centerOnPoint(p.x, p.y - 30, Math.max(1.5, Math.min(2.4, fit.scale * 2.6)))
     setSelected(node.person)
+    setMode('genealogia')
   }
 
   function goToPerson(id) {
@@ -108,9 +114,19 @@ export default function TreeCanvasPage() {
     if (node) handleSelect(node)
   }
 
+  function toggleGenealogia() {
+    setMode((m) => (m === 'genealogia' ? 'cenario' : 'genealogia'))
+  }
+
+  function toggleExplorar() {
+    setMode((m) => (m === 'explorar' ? 'cenario' : 'explorar'))
+  }
+
   if (loading) return <LoadingSpinner />
 
   const showDust = period === 'dia' || period === 'amanhecer'
+  const inGenealogia = mode === 'genealogia'
+  const inExplorar = mode === 'explorar'
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#0c0a06]">
@@ -130,34 +146,43 @@ export default function TreeCanvasPage() {
               className="absolute left-0 top-0 origin-top-left"
               style={{ width: viewport.width, height: viewport.height, willChange: 'transform' }}
             >
-              <SceneLayers ref={sceneRef} period={period} />
-
-              {showDust && (
-                <div ref={dustRef} className="parallax-layer">
-                  <DustParticles count={14} />
-                </div>
-              )}
-
-              <div className="tree-vignette-inner" />
-
               <div
-                className="absolute left-0 top-0"
-                style={{
-                  width: layout.width,
-                  height: layout.height,
-                  transform: `translate(${fit.offsetX}px, ${fit.offsetY}px) scale(${fit.scale})`,
-                  transformOrigin: '0 0',
-                }}
+                className="mode-zoom-layer"
+                style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
               >
-                <TreeConnectors edges={layout.edges} width={layout.width} height={layout.height} />
-                {layout.nodes.map((node, i) => (
-                  <PersonPlaque
-                    key={node.id}
-                    node={node}
-                    delay={Math.min(i * 45, 900)}
-                    onSelect={handleSelect}
-                  />
-                ))}
+                <div className={`scene-focus ${inGenealogia ? 'scene-focus-dimmed' : ''}`}>
+                  <SceneLayers ref={sceneRef} period={period} />
+
+                  {showDust && (
+                    <div ref={dustRef} className="parallax-layer">
+                      <DustParticles count={14} />
+                    </div>
+                  )}
+
+                  <div className="tree-vignette-inner" />
+                </div>
+
+                <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
+                  <div
+                    className="absolute left-0 top-0"
+                    style={{
+                      width: layout.width,
+                      height: layout.height,
+                      transform: `translate(${fit.offsetX}px, ${fit.offsetY}px) scale(${fit.scale})`,
+                      transformOrigin: '0 0',
+                    }}
+                  >
+                    <BranchConnectors nodes={layout.nodes} spouseEdges={layout.edges.filter((e) => e.type === 'spouse')} />
+                    {layout.nodes.map((node, i) => (
+                      <PersonPlaque
+                        key={node.id}
+                        node={node}
+                        delay={Math.min(i * 45, 900)}
+                        onSelect={handleSelect}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -167,41 +192,69 @@ export default function TreeCanvasPage() {
       <div className="tree-vignette pointer-events-none" />
       <AmbientLeaves count={7} />
 
-      <div
-        className="pointer-events-none fixed inset-x-0 top-0 z-20 flex items-center justify-between px-4"
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
-      >
-        <button
-          onClick={() => navigate('/')}
-          className="pointer-events-auto glass-btn"
-          aria-label="Início"
+      {!inExplorar && (
+        <div
+          className="pointer-events-none fixed inset-x-0 top-0 z-20 flex items-center justify-between px-4"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
         >
-          ⟵
-        </button>
-        <div className="pointer-events-auto flex gap-2">
-          {rootPerson && (
-            <button onClick={() => goToPerson(rootPerson.id)} className="glass-btn" aria-label="Centralizar na raiz">
-              ⌂
-            </button>
-          )}
-          {people.length > 0 && (
-            <button onClick={() => setSearching(true)} className="glass-btn" aria-label="Buscar pessoa">
-              ⌕
-            </button>
-          )}
-          <button onClick={() => navigate('/pesquisa')} className="glass-btn" aria-label="Central de pesquisa">
-            ❦
+          <button
+            onClick={() => navigate('/')}
+            className="pointer-events-auto glass-btn"
+            aria-label="Início"
+          >
+            ⟵
           </button>
+          <div className="pointer-events-auto flex gap-2">
+            {rootPerson && (
+              <button onClick={() => goToPerson(rootPerson.id)} className="glass-btn" aria-label="Centralizar na raiz">
+                ⌂
+              </button>
+            )}
+            {people.length > 0 && (
+              <button onClick={() => setSearching(true)} className="glass-btn" aria-label="Buscar pessoa">
+                ⌕
+              </button>
+            )}
+            <button onClick={() => navigate('/pesquisa')} className="glass-btn" aria-label="Central de pesquisa">
+              ❦
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {people.length > 0 && (
+      {people.length > 0 && !inExplorar && (
+        <>
+          <div
+            className="pointer-events-none fixed inset-x-0 z-20 flex justify-center gap-2.5 px-4"
+            style={{ bottom: 'calc(env(safe-area-inset-bottom) + 26px)' }}
+          >
+            <button
+              onClick={toggleGenealogia}
+              className={`pointer-events-auto mode-pill ${inGenealogia ? 'mode-pill-active' : ''}`}
+            >
+              🌳 {inGenealogia ? 'Fechar genealogia' : 'Ver genealogia'}
+            </button>
+            <button onClick={toggleExplorar} className="pointer-events-auto mode-pill">
+              🔍 Explorar árvore
+            </button>
+          </div>
+
+          <button
+            onClick={() => setAdding(true)}
+            className="fab-add"
+            aria-label="Adicionar pessoa"
+          >
+            +
+          </button>
+        </>
+      )}
+
+      {inExplorar && (
         <button
-          onClick={() => setAdding(true)}
-          className="fab-add"
-          aria-label="Adicionar pessoa"
+          onClick={() => setMode('cenario')}
+          className="explore-back-btn"
         >
-          +
+          ⟵ Voltar
         </button>
       )}
 
