@@ -242,7 +242,7 @@ export default function TreeCanvasPage() {
               🌳 {inGenealogia ? 'Fechar genealogia' : 'Ver genealogia'}
             </button>
             <button onClick={toggleExplorar} className="pointer-events-auto mode-pill">
-              🔍 Explorar árvore
+              🔍 Explorar Interior
             </button>
           </div>
 
@@ -276,9 +276,11 @@ export default function TreeCanvasPage() {
       {adding && (
         <PersonFormModal
           onClose={() => setAdding(false)}
-          onSaved={(id) => {
+          onSaved={() => {
+            // adicionar alguém nunca move a câmera nem abre a genealogia
+            // sozinho — o cartão só aparece quando o usuário abrir "Ver
+            // genealogia" por conta própria.
             setAdding(false)
-            setTimeout(() => goToPerson(id), 250)
           }}
         />
       )}
