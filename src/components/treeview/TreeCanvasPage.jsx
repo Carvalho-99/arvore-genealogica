@@ -299,13 +299,29 @@ export default function TreeCanvasPage() {
 }
 
 function EmptyForest({ period, onStart }) {
+  const wrapRef = useRef(null)
+
+  // mesmo efeito de parallax sutil da tela inicial (tela 1), só que
+  // isolado aqui — não mexe no parallax da árvore populada.
+  function handleMouseMove(e) {
+    const el = wrapRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const px = (e.clientX - rect.left) / rect.width - 0.5
+    const py = (e.clientY - rect.top) / rect.height - 0.5
+    el.style.setProperty('--parallax-x', `${px * -24}px`)
+    el.style.setProperty('--parallax-y', `${py * -16}px`)
+  }
+
   return (
-    <div className="relative flex h-full w-full items-center justify-center">
-      <img
-        src={`${base}images/scenes/arvore_${period}.webp`}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-70"
-      />
+    <div className="relative flex h-full w-full items-center justify-center" onMouseMove={handleMouseMove}>
+      <div ref={wrapRef} className="empty-parallax-wrap">
+        <img
+          src={`${base}images/scenes/arvore_${period}.webp`}
+          alt=""
+          className="empty-parallax-img"
+        />
+      </div>
       <div className="tree-vignette pointer-events-none" />
       <div className="relative z-10 mx-6 max-w-sm rounded-2xl border border-amber-200/15 bg-black/40 p-8 text-center backdrop-blur-md">
         <p className="font-serif-display text-lg text-amber-50">
