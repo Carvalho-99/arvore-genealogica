@@ -579,10 +579,15 @@ body {
   to { transform: scale(1.18); filter: brightness(0.6); }
 }
 
-/* mesmo parallax sutil da tela inicial, aplicado ao fundo da árvore vazia */
+/* mesmo parallax sutil da tela inicial, aplicado ao fundo da árvore vazia.
+   O deslocamento real do mouse chega a no máximo ±12px/±8px (px*-24/py*-16
+   com px,py em ±0.5) — por isso a folga é um valor fixo em px (não %):
+   cobre esse deslocamento com margem de sobra em qualquer tamanho de tela,
+   sem crescer virando "zoom" em telas maiores como uma folga em % faria.
+   É exatamente isso que estava cortando cenário ao redor da árvore à toa. */
 .empty-parallax-wrap {
   position: absolute;
-  inset: -6%;
+  inset: -20px;
   --parallax-x: 0px;
   --parallax-y: 0px;
   transform: translate(var(--parallax-x), var(--parallax-y));
