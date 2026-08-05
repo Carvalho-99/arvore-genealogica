@@ -15,7 +15,6 @@ import PersonFormModal from './PersonFormModal'
 import SearchOverlay from './SearchOverlay'
 import LoadingSpinner from '../common/LoadingSpinner'
 
-const base = import.meta.env.BASE_URL
 const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
 
 // zoom aplicado por modo, sobre a câmera do usuário — nunca muda o
@@ -144,31 +143,29 @@ export default function TreeCanvasPage() {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {people.length === 0 ? (
-          <EmptyForest period={period} onStart={() => setAdding(true)} />
-        ) : (
-          viewport.width > 0 && (
+        {viewport.width > 0 && (
+          <div
+            ref={worldRef}
+            className="absolute left-0 top-0 origin-top-left"
+            style={{ width: viewport.width, height: viewport.height, willChange: 'transform' }}
+          >
             <div
-              ref={worldRef}
-              className="absolute left-0 top-0 origin-top-left"
-              style={{ width: viewport.width, height: viewport.height, willChange: 'transform' }}
+              className="mode-zoom-layer"
+              style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
             >
-              <div
-                className="mode-zoom-layer"
-                style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
-              >
-                <div className={`scene-focus ${inGenealogia ? 'scene-focus-dimmed' : ''}`}>
-                  <SceneLayers ref={sceneRef} period={period} />
+              <div className={`scene-focus ${inGenealogia ? 'scene-focus-dimmed' : ''}`}>
+                <SceneLayers ref={sceneRef} period={period} />
 
-                  {showDust && (
-                    <div ref={dustRef} className="parallax-layer">
-                      <DustParticles count={14} />
-                    </div>
-                  )}
+                {showDust && (
+                  <div ref={dustRef} className="parallax-layer">
+                    <DustParticles count={14} />
+                  </div>
+                )}
 
-                  <div className="tree-vignette-inner" />
-                </div>
+                <div className="tree-vignette-inner" />
+              </div>
 
+              {people.length > 0 && (
                 <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
                   <div
                     className="absolute left-0 top-0"
@@ -190,14 +187,30 @@ export default function TreeCanvasPage() {
                     ))}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
-          )
+          </div>
         )}
       </div>
 
       <div className="tree-vignette pointer-events-none" />
       <AmbientLeaves count={7} />
+
+      {people.length === 0 && (
+        <div className="empty-card-wrap pointer-events-none fixed inset-0 z-10 flex items-center justify-center px-6">
+          <div className="pointer-events-auto max-w-sm rounded-2xl border border-amber-200/15 bg-black/40 p-8 text-center backdrop-blur-md">
+            <p className="font-serif-display text-lg text-amber-50">
+              A árvore ainda está vazia
+            </p>
+            <p className="mt-2 text-sm text-amber-100/70">
+              Plante a primeira pessoa da família e comece a fazer a árvore crescer.
+            </p>
+            <button onClick={() => setAdding(true)} className="mt-5 btn-gold">
+              Adicionar primeira pessoa
+            </button>
+          </div>
+        </div>
+      )}
 
       {!inExplorar && (
         <div
@@ -294,30 +307,6 @@ export default function TreeCanvasPage() {
           onClose={() => setSearching(false)}
         />
       )}
-    </div>
-  )
-}
-
-function EmptyForest({ period, onStart }) {
-  return (
-    <div className="relative flex h-full w-full items-center justify-center">
-      <img
-        src={`${base}images/scenes/arvore_${period}.webp`}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-70"
-      />
-      <div className="tree-vignette pointer-events-none" />
-      <div className="relative z-10 mx-6 max-w-sm rounded-2xl border border-amber-200/15 bg-black/40 p-8 text-center backdrop-blur-md">
-        <p className="font-serif-display text-lg text-amber-50">
-          A árvore ainda está vazia
-        </p>
-        <p className="mt-2 text-sm text-amber-100/70">
-          Plante a primeira pessoa da família e comece a fazer a árvore crescer.
-        </p>
-        <button onClick={onStart} className="mt-5 btn-gold">
-          Adicionar primeira pessoa
-        </button>
-      </div>
     </div>
   )
 }
