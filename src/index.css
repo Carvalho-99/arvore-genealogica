@@ -606,8 +606,13 @@ body {
   height: 100%;
   object-fit: cover;
   transform: scale(1.15);
-  filter: blur(50px) brightness(0.55) saturate(1.05);
-  opacity: 0.8;
+  /* a imagem original já é mais escura nas bordas por natureza (o feixe de
+     luz ilumina o centro) — brightness(0.55) empurrava isso pra quase
+     preto em telas bem largas, lendo como "barra vazia" mesmo tendo
+     conteúdo ali. Menos escurecido e menos desfocado revela textura de
+     verdade nas laterais em vez de um vazio escuro. */
+  filter: blur(32px) brightness(0.82) saturate(1.05);
+  opacity: 0.95;
 }
 .empty-parallax-img {
   position: relative;
