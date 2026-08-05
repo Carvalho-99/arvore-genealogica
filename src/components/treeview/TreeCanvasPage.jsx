@@ -137,17 +137,17 @@ export default function TreeCanvasPage() {
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-[#0c0a06]">
-      {people.length === 0 ? (
-        <EmptyForest period={period} onStart={() => setAdding(true)} />
-      ) : (
-        <div
-          ref={containerRef}
-          className="absolute inset-0 touch-none select-none"
-          style={{ cursor: 'grab' }}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-        >
-          {viewport.width > 0 && (
+      <div
+        ref={containerRef}
+        className="absolute inset-0 touch-none select-none"
+        style={{ cursor: 'grab' }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {people.length === 0 ? (
+          <EmptyForest period={period} onStart={() => setAdding(true)} />
+        ) : (
+          viewport.width > 0 && (
             <div
               ref={worldRef}
               className="absolute left-0 top-0 origin-top-left"
@@ -192,9 +192,9 @@ export default function TreeCanvasPage() {
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      )}
+          )
+        )}
+      </div>
 
       <div className="tree-vignette pointer-events-none" />
       <AmbientLeaves count={7} />
