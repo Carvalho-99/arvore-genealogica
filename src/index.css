@@ -593,11 +593,28 @@ body {
   transform: translate(var(--parallax-x), var(--parallax-y));
   transition: transform 0.15s ease-out;
 }
-.empty-parallax-img {
+/* a imagem original é 16:9 — numa tela mais larga que isso (ultrawide,
+   por exemplo), "cover" de ponta a ponta cortava a copa e as raízes pra
+   preencher a largura. Duas camadas resolvem isso: o fundo borrado cobre
+   a tela inteira sem compromisso (pode cortar à vontade, é só atmosfera),
+   e a árvore em si usa "contain" por cima, então ela NUNCA é cortada,
+   nem em telas bem largas — só sobra uma faixa borrada nas laterais. */
+.empty-parallax-backdrop {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.7;
+  transform: scale(1.15);
+  filter: blur(50px) brightness(0.55) saturate(1.05);
+  opacity: 0.8;
+}
+.empty-parallax-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0.85;
 }
 
 .hero-mist {

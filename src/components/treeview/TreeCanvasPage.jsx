@@ -319,6 +319,11 @@ function EmptyForest({ period, onStart }) {
         <img
           src={`${base}images/scenes/arvore_${period}.webp`}
           alt=""
+          className="empty-parallax-backdrop"
+        />
+        <img
+          src={`${base}images/scenes/arvore_${period}.webp`}
+          alt=""
           className="empty-parallax-img"
         />
       </div>
