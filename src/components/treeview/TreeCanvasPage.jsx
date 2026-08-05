@@ -40,9 +40,16 @@ export default function TreeCanvasPage() {
   // a cena (fundo + câmera) é sempre do tamanho exato da viewport — nunca do
   // tamanho do conteúdo da árvore. É isso que garante 100% de tela sempre,
   // sem barra de rolagem e sem o zoom "revelar" o fundo da página.
+  // Lê o tamanho na hora (não espera o primeiro callback assíncrono do
+  // ResizeObserver, que às vezes demora/nunca dispara logo após um reload
+  // e deixava a cena inteira em branco).
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
+    const rect = el.getBoundingClientRect()
+    if (rect.width > 0 && rect.height > 0) {
+      setViewport({ width: rect.width, height: rect.height })
+    }
     const observer = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect
       setViewport({ width, height })
