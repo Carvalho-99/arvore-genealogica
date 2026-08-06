@@ -250,6 +250,9 @@ export default function TreeCanvasPage() {
             <button onClick={() => navigate('/pesquisa')} className="glass-btn" aria-label="Central de pesquisa">
               ❦
             </button>
+            <button onClick={() => navigate('/lista')} className="glass-btn" aria-label="Lista de nomes">
+              ☰
+            </button>
           </div>
         </div>
       )}
