@@ -5,6 +5,15 @@
 // com cabeçalho de geração se tiver filho(s) ou se não tiver pais
 // cadastrados (ponto de partida da árvore) — do contrário a pessoa já
 // aparece como filha de outro bloco, sem precisar de cabeçalho próprio.
+
+// segundos sozinhos empatam fácil quando várias pessoas são cadastradas
+// na mesma leva (ex: um script de importação) — nanosegundos desempatam
+function createdAtValue(person) {
+  const ts = person?.createdAt
+  if (!ts) return 0
+  return (ts.seconds ?? 0) * 1e9 + (ts.nanoseconds ?? 0)
+}
+
 export function computeSimpleListTree(people) {
   const byId = new Map(people.map((p) => [p.id, p]))
 
@@ -39,10 +48,13 @@ export function computeSimpleListTree(people) {
   }
   for (const p of people) genOf(p.id)
 
-  // agrupa em unidades (casal ou pessoa solteira)
+  // agrupa em unidades (casal ou pessoa solteira) — itera em ordem de
+  // cadastro pra quem foi cadastrado primeiro sempre aparecer primeiro
+  // no casal (em vez de depender da ordem (não garantida) do Firestore)
   const unitOf = new Map()
   const units = []
-  for (const p of people) {
+  const peopleByCreation = [...people].sort((a, b) => createdAtValue(a) - createdAtValue(b))
+  for (const p of peopleByCreation) {
     if (unitOf.has(p.id)) continue
     const spouseId = [...(spouseMap.get(p.id) ?? [])].find((sid) => byId.has(sid) && !unitOf.has(sid))
     const members = spouseId ? [p.id, spouseId] : [p.id]
@@ -54,7 +66,7 @@ export function computeSimpleListTree(people) {
   for (const unit of units) {
     unit.children = people
       .filter((p) => (p.parentIds ?? []).some((pid) => unit.members.includes(pid)))
-      .sort((a, b) => (a.createdAt?.seconds ?? 0) - (b.createdAt?.seconds ?? 0))
+      .sort((a, b) => createdAtValue(a) - createdAtValue(b))
   }
 
   const blocks = units.filter(
@@ -64,8 +76,8 @@ export function computeSimpleListTree(people) {
   )
 
   blocks.sort((a, b) => {
-    const ca = Math.min(...a.members.map((id) => byId.get(id)?.createdAt?.seconds ?? 0))
-    const cb = Math.min(...b.members.map((id) => byId.get(id)?.createdAt?.seconds ?? 0))
+    const ca = Math.min(...a.members.map((id) => createdAtValue(byId.get(id))))
+    const cb = Math.min(...b.members.map((id) => createdAtValue(byId.get(id))))
     return ca - cb
   })
 
