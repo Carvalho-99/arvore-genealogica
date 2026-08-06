@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePanZoom } from '../../hooks/usePanZoom'
-import { useTimeOfDay } from '../../lib/timeOfDay'
+import { useTimeOfDay, CINEMATIC_PERIODS } from '../../lib/timeOfDay'
 import { preloadImages } from '../../lib/preload'
 import AmbientLeaves from './AmbientLeaves'
 import DustParticles from './DustParticles'
 import SceneLayers, { periodImageUrls, sharedImageUrls } from './SceneLayers'
 import SimpleTreeBackdrop from './SimpleTreeBackdrop'
 
-const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
-
-const PERIOD_ICONS = { amanhecer: '🌅', dia: '☀️', por_do_sol: '🌇', noite: '🌙' }
-const PERIOD_LABELS = { amanhecer: 'Amanhecer', dia: 'Dia', por_do_sol: 'Pôr do sol', noite: 'Noite' }
+const PERIOD_ICONS = {
+  amanhecer: '🌅', dia: '☀️', por_do_sol: '🌇', noite: '🌙',
+  chuva: '🌧️', neve: '❄️', nublado: '☁️',
+}
+const PERIOD_LABELS = {
+  amanhecer: 'Amanhecer', dia: 'Dia', por_do_sol: 'Pôr do sol', noite: 'Noite',
+  chuva: 'Chuva', neve: 'Neve', nublado: 'Nublado',
+}
 
 // zoom aplicado por modo, sobre a câmera do usuário — nunca muda o
 // enquadramento, só aproxima/afasta em torno do centro da tela
@@ -53,10 +57,15 @@ export default function TreeCanvasPage() {
   // esquenta o cache do navegador com as imagens do período atual na hora,
   // e as dos outros 3 períodos aos poucos, sem competir com o carregamento
   // inicial — assim a troca de cenário nunca trava.
+  // chuva/neve/nublado não têm cena cinematográfica em camadas (só a
+  // imagem única do Cenário) — o Explorar Interior cai pro "dia" nesses
+  // casos, único período sempre com todos os assets prontos
+  const cinematicPeriod = CINEMATIC_PERIODS.includes(period) ? period : 'dia'
+
   useEffect(() => {
-    preloadImages([...sharedImageUrls(), ...periodImageUrls(period)])
+    preloadImages([...sharedImageUrls(), ...periodImageUrls(cinematicPeriod)])
     const idle = setTimeout(() => {
-      ALL_PERIODS.filter((p) => p !== period).forEach((p) => preloadImages(periodImageUrls(p)))
+      CINEMATIC_PERIODS.filter((p) => p !== cinematicPeriod).forEach((p) => preloadImages(periodImageUrls(p)))
     }, 2500)
     return () => clearTimeout(idle)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +102,7 @@ export default function TreeCanvasPage() {
     }
   }
 
-  const showDust = period === 'dia' || period === 'amanhecer'
+  const showDust = cinematicPeriod === 'dia' || cinematicPeriod === 'amanhecer'
   const inExplorar = mode === 'explorar'
 
   return (
@@ -114,7 +123,7 @@ export default function TreeCanvasPage() {
             <div className="mode-zoom-layer" style={{ transform: `scale(${MODE_ZOOM[mode]})` }}>
               {inExplorar ? (
                 <div className="scene-focus">
-                  <SceneLayers ref={sceneRef} period={period} />
+                  <SceneLayers ref={sceneRef} period={cinematicPeriod} />
 
                   {showDust && (
                     <div ref={dustRef} className="parallax-layer">
