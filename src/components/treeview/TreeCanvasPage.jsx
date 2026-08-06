@@ -19,8 +19,10 @@ const base = import.meta.env.BASE_URL
 const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
 
 // zoom aplicado por modo, sobre a câmera do usuário — nunca muda o
-// enquadramento, só aproxima/afasta em torno do centro da tela
-const MODE_ZOOM = { cenario: 1, genealogia: 1.05, explorar: 1.175 }
+// enquadramento, só aproxima/afasta em torno do centro da tela.
+// Genealogia não aproxima a câmera: é só um overlay sobre a árvore
+// parada, pra parecer um mapa sendo exibido em cima de uma fotografia.
+const MODE_ZOOM = { cenario: 1, genealogia: 1, explorar: 1.175 }
 
 export default function TreeCanvasPage() {
   const { people, loading, rootPerson } = usePeople()
@@ -157,7 +159,7 @@ export default function TreeCanvasPage() {
                 className="mode-zoom-layer"
                 style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
               >
-                <div className={`scene-focus ${inGenealogia ? 'scene-focus-dimmed' : ''}`}>
+                <div className="scene-focus">
                   <SceneLayers ref={sceneRef} period={period} />
 
                   {showDust && (
@@ -168,6 +170,8 @@ export default function TreeCanvasPage() {
 
                   <div className="tree-vignette-inner" />
                 </div>
+
+                <div className={`genealogy-scrim ${inGenealogia ? 'genealogy-scrim-visible' : ''}`} />
 
                 <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
                   <div

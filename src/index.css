@@ -444,11 +444,22 @@ body {
 .scene-focus {
   position: absolute;
   inset: 0;
-  transition: filter 700ms ease;
-  filter: blur(0px) brightness(1) saturate(1);
 }
-.scene-focus-dimmed {
-  filter: blur(3px) brightness(0.62) saturate(0.92);
+
+/* leve escurecimento sobre a árvore quando a Genealogia está aberta —
+   pensado como um mapa sendo exibido em cima de uma fotografia: sem
+   blur, sem mexer na câmera, a árvore continua nítida e visível embaixo */
+.genealogy-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(5, 4, 1, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 650ms ease;
+}
+.genealogy-scrim-visible {
+  opacity: 1;
 }
 
 .genealogy-layer {
