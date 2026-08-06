@@ -10,6 +10,7 @@ import BranchConnectors from './BranchConnectors'
 import AmbientLeaves from './AmbientLeaves'
 import DustParticles from './DustParticles'
 import SceneLayers, { periodImageUrls, sharedImageUrls } from './SceneLayers'
+import SimpleTreeBackdrop from './SimpleTreeBackdrop'
 import PersonDetailModal from './PersonDetailModal'
 import PersonFormModal from './PersonFormModal'
 import SearchOverlay from './SearchOverlay'
@@ -32,6 +33,7 @@ export default function TreeCanvasPage() {
   const worldRef = useRef(null)
   const sceneRef = useRef(null)
   const dustRef = useRef(null)
+  const simpleBgRef = useRef(null)
 
   const [mode, setMode] = useState('cenario') // 'cenario' | 'genealogia' | 'explorar'
   const [selected, setSelected] = useState(null)
@@ -89,10 +91,12 @@ export default function TreeCanvasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rootPerson?.id])
 
-  // parallax passivo: cada camada da cena se move um pouco ao mover o
-  // mouse, em velocidades diferentes, pra dar sensação de profundidade —
-  // igual à tela de abertura. As placas/galhos genealógicos ficam de fora
-  // disso de propósito, pra continuar sempre clicáveis com precisão.
+  // parallax passivo: a camada de fundo visível (o cenário calmo ou, no
+  // Explorar Interior, a cena cinematográfica completa) se move um pouco
+  // ao mover o mouse — igual à tela de abertura. Cada ref só existe
+  // enquanto a camada correspondente está montada, então isso nunca
+  // afeta o que não está na tela. Placas/galhos ficam de fora de
+  // propósito, pra continuarem sempre clicáveis com precisão.
   function handleMouseMove(e) {
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -100,11 +104,19 @@ export default function TreeCanvasPage() {
     const py = (e.clientY - rect.top) / rect.height - 0.5
     sceneRef.current?.applyParallax(px, py)
     if (dustRef.current) dustRef.current.style.transform = `translate(${px * -22}px, ${py * -15}px)`
+    if (simpleBgRef.current) {
+      simpleBgRef.current.style.setProperty('--parallax-x', `${px * -24}px`)
+      simpleBgRef.current.style.setProperty('--parallax-y', `${py * -16}px`)
+    }
   }
 
   function handleMouseLeave() {
     sceneRef.current?.resetParallax()
     if (dustRef.current) dustRef.current.style.transform = 'translate(0, 0)'
+    if (simpleBgRef.current) {
+      simpleBgRef.current.style.setProperty('--parallax-x', '0px')
+      simpleBgRef.current.style.setProperty('--parallax-y', '0px')
+    }
   }
 
   function screenPointOf(node) {
@@ -159,41 +171,50 @@ export default function TreeCanvasPage() {
                 className="mode-zoom-layer"
                 style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
               >
-                <div className="scene-focus">
-                  <SceneLayers ref={sceneRef} period={period} />
+                {inExplorar ? (
+                  <div className="scene-focus">
+                    <SceneLayers ref={sceneRef} period={period} />
 
-                  {showDust && (
-                    <div ref={dustRef} className="parallax-layer">
-                      <DustParticles count={14} />
-                    </div>
-                  )}
+                    {showDust && (
+                      <div ref={dustRef} className="parallax-layer">
+                        <DustParticles count={14} />
+                      </div>
+                    )}
 
-                  <div className="tree-vignette-inner" />
-                </div>
-
-                <div className={`genealogy-scrim ${inGenealogia ? 'genealogy-scrim-visible' : ''}`} />
-
-                <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
-                  <div
-                    className="absolute left-0 top-0"
-                    style={{
-                      width: layout.width,
-                      height: layout.height,
-                      transform: `translate(${fit.offsetX}px, ${fit.offsetY}px) scale(${fit.scale})`,
-                      transformOrigin: '0 0',
-                    }}
-                  >
-                    <BranchConnectors nodes={layout.nodes} spouseEdges={layout.edges.filter((e) => e.type === 'spouse')} />
-                    {layout.nodes.map((node, i) => (
-                      <PersonPlaque
-                        key={node.id}
-                        node={node}
-                        delay={Math.min(i * 45, 900)}
-                        onSelect={handleSelect}
-                      />
-                    ))}
+                    <div className="tree-vignette-inner" />
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="scene-focus">
+                      <SimpleTreeBackdrop ref={simpleBgRef} period={period} />
+                      <div className="tree-vignette-inner" />
+                    </div>
+
+                    <div className={`genealogy-scrim ${inGenealogia ? 'genealogy-scrim-visible' : ''}`} />
+
+                    <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
+                      <div
+                        className="absolute left-0 top-0"
+                        style={{
+                          width: layout.width,
+                          height: layout.height,
+                          transform: `translate(${fit.offsetX}px, ${fit.offsetY}px) scale(${fit.scale})`,
+                          transformOrigin: '0 0',
+                        }}
+                      >
+                        <BranchConnectors nodes={layout.nodes} spouseEdges={layout.edges.filter((e) => e.type === 'spouse')} />
+                        {layout.nodes.map((node, i) => (
+                          <PersonPlaque
+                            key={node.id}
+                            node={node}
+                            delay={Math.min(i * 45, 900)}
+                            onSelect={handleSelect}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )
