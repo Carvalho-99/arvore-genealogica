@@ -9,13 +9,13 @@ import PersonPlaque from './PersonPlaque'
 import BranchConnectors from './BranchConnectors'
 import AmbientLeaves from './AmbientLeaves'
 import DustParticles from './DustParticles'
+import SimpleTreeBackdrop from './SimpleTreeBackdrop'
 import SceneLayers, { periodImageUrls, sharedImageUrls } from './SceneLayers'
 import PersonDetailModal from './PersonDetailModal'
 import PersonFormModal from './PersonFormModal'
 import SearchOverlay from './SearchOverlay'
 import LoadingSpinner from '../common/LoadingSpinner'
 
-const base = import.meta.env.BASE_URL
 const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
 
 // zoom aplicado por modo, sobre a câmera do usuário — nunca muda o
@@ -30,6 +30,7 @@ export default function TreeCanvasPage() {
   const worldRef = useRef(null)
   const sceneRef = useRef(null)
   const dustRef = useRef(null)
+  const simpleBgRef = useRef(null)
 
   const [mode, setMode] = useState('cenario') // 'cenario' | 'genealogia' | 'explorar'
   const [selected, setSelected] = useState(null)
@@ -87,10 +88,12 @@ export default function TreeCanvasPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rootPerson?.id])
 
-  // parallax passivo: cada camada da cena se move um pouco ao mover o
-  // mouse, em velocidades diferentes, pra dar sensação de profundidade —
-  // igual à tela de abertura. As placas/galhos genealógicos ficam de fora
-  // disso de propósito, pra continuar sempre clicáveis com precisão.
+  // parallax passivo: a camada de fundo visível (o cenário calmo ou, no
+  // Explorar Interior, a cena cinematográfica completa) se move um pouco
+  // ao mover o mouse — igual à tela de abertura. Cada ref só existe
+  // enquanto a camada correspondente está montada, então isso nunca
+  // afeta o que não está na tela. Placas/galhos ficam de fora de
+  // propósito, pra continuarem sempre clicáveis com precisão.
   function handleMouseMove(e) {
     const rect = containerRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -98,11 +101,19 @@ export default function TreeCanvasPage() {
     const py = (e.clientY - rect.top) / rect.height - 0.5
     sceneRef.current?.applyParallax(px, py)
     if (dustRef.current) dustRef.current.style.transform = `translate(${px * -22}px, ${py * -15}px)`
+    if (simpleBgRef.current) {
+      simpleBgRef.current.style.setProperty('--parallax-x', `${px * -24}px`)
+      simpleBgRef.current.style.setProperty('--parallax-y', `${py * -16}px`)
+    }
   }
 
   function handleMouseLeave() {
     sceneRef.current?.resetParallax()
     if (dustRef.current) dustRef.current.style.transform = 'translate(0, 0)'
+    if (simpleBgRef.current) {
+      simpleBgRef.current.style.setProperty('--parallax-x', '0px')
+      simpleBgRef.current.style.setProperty('--parallax-y', '0px')
+    }
   }
 
   function screenPointOf(node) {
@@ -144,60 +155,81 @@ export default function TreeCanvasPage() {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {people.length === 0 ? (
-          <EmptyForest period={period} onStart={() => setAdding(true)} />
-        ) : (
-          viewport.width > 0 && (
+        {viewport.width > 0 && (
+          <div
+            ref={worldRef}
+            className="absolute left-0 top-0 origin-top-left"
+            style={{ width: viewport.width, height: viewport.height, willChange: 'transform' }}
+          >
             <div
-              ref={worldRef}
-              className="absolute left-0 top-0 origin-top-left"
-              style={{ width: viewport.width, height: viewport.height, willChange: 'transform' }}
+              className="mode-zoom-layer"
+              style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
             >
-              <div
-                className="mode-zoom-layer"
-                style={{ transform: `scale(${MODE_ZOOM[mode]})` }}
-              >
-                <div className={`scene-focus ${inGenealogia ? 'scene-focus-dimmed' : ''}`}>
+              {inExplorar ? (
+                <>
                   <SceneLayers ref={sceneRef} period={period} />
-
                   {showDust && (
                     <div ref={dustRef} className="parallax-layer">
                       <DustParticles count={14} />
                     </div>
                   )}
-
                   <div className="tree-vignette-inner" />
-                </div>
-
-                <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
-                  <div
-                    className="absolute left-0 top-0"
-                    style={{
-                      width: layout.width,
-                      height: layout.height,
-                      transform: `translate(${fit.offsetX}px, ${fit.offsetY}px) scale(${fit.scale})`,
-                      transformOrigin: '0 0',
-                    }}
-                  >
-                    <BranchConnectors nodes={layout.nodes} spouseEdges={layout.edges.filter((e) => e.type === 'spouse')} />
-                    {layout.nodes.map((node, i) => (
-                      <PersonPlaque
-                        key={node.id}
-                        node={node}
-                        delay={Math.min(i * 45, 900)}
-                        onSelect={handleSelect}
-                      />
-                    ))}
+                </>
+              ) : (
+                <>
+                  <div className={`scene-focus ${inGenealogia ? 'scene-focus-dimmed' : ''}`}>
+                    <SimpleTreeBackdrop ref={simpleBgRef} period={period} />
+                    <div className="tree-vignette-inner" />
                   </div>
-                </div>
-              </div>
+
+                  {people.length > 0 && (
+                    <div className={`genealogy-layer ${inGenealogia ? 'genealogy-layer-visible' : ''}`}>
+                      <div
+                        className="absolute left-0 top-0"
+                        style={{
+                          width: layout.width,
+                          height: layout.height,
+                          transform: `translate(${fit.offsetX}px, ${fit.offsetY}px) scale(${fit.scale})`,
+                          transformOrigin: '0 0',
+                        }}
+                      >
+                        <BranchConnectors nodes={layout.nodes} spouseEdges={layout.edges.filter((e) => e.type === 'spouse')} />
+                        {layout.nodes.map((node, i) => (
+                          <PersonPlaque
+                            key={node.id}
+                            node={node}
+                            delay={Math.min(i * 45, 900)}
+                            onSelect={handleSelect}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          )
+          </div>
         )}
       </div>
 
       <div className="tree-vignette pointer-events-none" />
       <AmbientLeaves count={7} />
+
+      {!inExplorar && people.length === 0 && (
+        <div className="empty-card-wrap pointer-events-none fixed inset-0 z-10 flex items-center justify-center px-6">
+          <div className="pointer-events-auto max-w-sm rounded-2xl border border-amber-200/15 bg-black/40 p-8 text-center backdrop-blur-md">
+            <p className="font-serif-display text-lg text-amber-50">
+              A árvore ainda está vazia
+            </p>
+            <p className="mt-2 text-sm text-amber-100/70">
+              Plante a primeira pessoa da família e comece a fazer a árvore crescer.
+            </p>
+            <button onClick={() => setAdding(true)} className="mt-5 btn-gold">
+              Adicionar primeira pessoa
+            </button>
+          </div>
+        </div>
+      )}
 
       {!inExplorar && (
         <div
@@ -277,9 +309,10 @@ export default function TreeCanvasPage() {
         <PersonFormModal
           onClose={() => setAdding(false)}
           onSaved={() => {
-            // adicionar alguém nunca move a câmera nem abre a genealogia
-            // sozinho — o cartão só aparece quando o usuário abrir "Ver
-            // genealogia" por conta própria.
+            // adicionar alguém nunca move a câmera, nunca abre a genealogia
+            // e nunca troca de cenário sozinho — o usuário continua vendo
+            // exatamente o que estava vendo, só o cartão de árvore vazia
+            // some (porque people.length deixou de ser 0).
             setAdding(false)
           }}
         />
@@ -294,51 +327,6 @@ export default function TreeCanvasPage() {
           onClose={() => setSearching(false)}
         />
       )}
-    </div>
-  )
-}
-
-function EmptyForest({ period, onStart }) {
-  const wrapRef = useRef(null)
-
-  // mesmo efeito de parallax sutil da tela inicial (tela 1), só que
-  // isolado aqui — não mexe no parallax da árvore populada.
-  function handleMouseMove(e) {
-    const el = wrapRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const px = (e.clientX - rect.left) / rect.width - 0.5
-    const py = (e.clientY - rect.top) / rect.height - 0.5
-    el.style.setProperty('--parallax-x', `${px * -24}px`)
-    el.style.setProperty('--parallax-y', `${py * -16}px`)
-  }
-
-  return (
-    <div className="relative flex h-full w-full items-center justify-center" onMouseMove={handleMouseMove}>
-      <div ref={wrapRef} className="empty-parallax-wrap">
-        <img
-          src={`${base}images/scenes/arvore_${period}.webp`}
-          alt=""
-          className="empty-parallax-backdrop"
-        />
-        <img
-          src={`${base}images/scenes/arvore_${period}.webp`}
-          alt=""
-          className="empty-parallax-img"
-        />
-      </div>
-      <div className="tree-vignette pointer-events-none" />
-      <div className="relative z-10 mx-6 max-w-sm rounded-2xl border border-amber-200/15 bg-black/40 p-8 text-center backdrop-blur-md">
-        <p className="font-serif-display text-lg text-amber-50">
-          A árvore ainda está vazia
-        </p>
-        <p className="mt-2 text-sm text-amber-100/70">
-          Plante a primeira pessoa da família e comece a fazer a árvore crescer.
-        </p>
-        <button onClick={onStart} className="mt-5 btn-gold">
-          Adicionar primeira pessoa
-        </button>
-      </div>
     </div>
   )
 }
