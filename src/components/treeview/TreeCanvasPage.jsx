@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { usePeople } from '../../context/PeopleContext'
 import { computeTreeLayout, fitLayoutToViewport } from '../../lib/treeLayout'
 import { usePanZoom } from '../../hooks/usePanZoom'
+import { useTiltParallax } from '../../hooks/useTiltParallax'
 import { useTimeOfDay } from '../../lib/timeOfDay'
 import { preloadImages } from '../../lib/preload'
 import PersonPlaque from './PersonPlaque'
@@ -97,27 +98,38 @@ export default function TreeCanvasPage() {
   // enquanto a camada correspondente está montada, então isso nunca
   // afeta o que não está na tela. Placas/galhos ficam de fora de
   // propósito, pra continuarem sempre clicáveis com precisão.
-  function handleMouseMove(e) {
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const px = (e.clientX - rect.left) / rect.width - 0.5
-    const py = (e.clientY - rect.top) / rect.height - 0.5
+  // ponto único que move todas as camadas — usado tanto pelo mouse
+  // (desktop) quanto pelo giroscópio (celular/tablet, via useTiltParallax),
+  // pra garantir que os dois input compartilham exatamente o mesmo efeito.
+  function applyParallaxAt(px, py) {
     sceneRef.current?.applyParallax(px, py)
-    if (dustRef.current) dustRef.current.style.transform = `translate(${px * -22}px, ${py * -15}px)`
+    if (dustRef.current) dustRef.current.style.transform = `translate3d(${px * -22}px, ${py * -15}px, 0)`
     if (simpleBgRef.current) {
       simpleBgRef.current.style.setProperty('--parallax-x', `${px * -24}px`)
       simpleBgRef.current.style.setProperty('--parallax-y', `${py * -16}px`)
     }
   }
 
+  function handleMouseMove(e) {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    const px = (e.clientX - rect.left) / rect.width - 0.5
+    const py = (e.clientY - rect.top) / rect.height - 0.5
+    applyParallaxAt(px, py)
+  }
+
   function handleMouseLeave() {
     sceneRef.current?.resetParallax()
-    if (dustRef.current) dustRef.current.style.transform = 'translate(0, 0)'
+    if (dustRef.current) dustRef.current.style.transform = 'translate3d(0, 0, 0)'
     if (simpleBgRef.current) {
       simpleBgRef.current.style.setProperty('--parallax-x', '0px')
       simpleBgRef.current.style.setProperty('--parallax-y', '0px')
     }
   }
+
+  // em celular/tablet (nunca em desktop — o hook não faz nada lá), a
+  // inclinação do aparelho aciona o mesmo `applyParallaxAt` do mouse
+  useTiltParallax(applyParallaxAt)
 
   function screenPointOf(node) {
     return { x: node.x * fit.scale + fit.offsetX, y: node.y * fit.scale + fit.offsetY }
@@ -326,6 +338,13 @@ export default function TreeCanvasPage() {
 function EmptyForest({ period, onStart }) {
   const wrapRef = useRef(null)
 
+  function applyAt(px, py) {
+    const el = wrapRef.current
+    if (!el) return
+    el.style.setProperty('--parallax-x', `${px * -24}px`)
+    el.style.setProperty('--parallax-y', `${py * -16}px`)
+  }
+
   // mesmo efeito de parallax sutil da tela inicial (tela 1), só que
   // isolado aqui — não mexe no parallax da árvore populada.
   function handleMouseMove(e) {
@@ -334,9 +353,11 @@ function EmptyForest({ period, onStart }) {
     const rect = el.getBoundingClientRect()
     const px = (e.clientX - rect.left) / rect.width - 0.5
     const py = (e.clientY - rect.top) / rect.height - 0.5
-    el.style.setProperty('--parallax-x', `${px * -24}px`)
-    el.style.setProperty('--parallax-y', `${py * -16}px`)
+    applyAt(px, py)
   }
+
+  // em celular/tablet, a inclinação do aparelho assume o lugar do mouse
+  useTiltParallax(applyAt)
 
   return (
     <div className="relative flex h-full w-full items-center justify-center" onMouseMove={handleMouseMove}>
