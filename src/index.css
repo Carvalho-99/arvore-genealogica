@@ -635,6 +635,16 @@ body {
   object-fit: contain;
   opacity: 0.85;
 }
+/* em telas em pé (celular/tablet no modo retrato) o problema é o oposto
+   do ultrawide: a tela é bem mais alta que larga, então "contain" (que
+   ajusta pela largura) sobrava uma faixa vazia enorme em cima/embaixo.
+   Em pé, "cover" é o certo — corta só as laterais (a árvore é larga),
+   preservando a copa e as raízes inteiras, que é o que importa. */
+@media (max-aspect-ratio: 1/1) {
+  .empty-parallax-img {
+    object-fit: cover;
+  }
+}
 
 .hero-mist {
   position: absolute;
