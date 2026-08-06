@@ -2,8 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-// base is updated to '/<repo-name>/' once the GitHub repo is created (M4)
+// Firebase Hosting serve o site na raiz do domínio (arvore-genealogica-64443.web.app),
+// diferente do GitHub Pages que precisava de um subcaminho (/arvore-genealogica/).
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/arvore-genealogica/',
+  base: '/',
 })
