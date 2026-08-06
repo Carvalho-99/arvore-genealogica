@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AmbientLeaves from '../treeview/AmbientLeaves'
-import { useTiltParallax } from '../../hooks/useTiltParallax'
 
 const base = import.meta.env.BASE_URL
 
@@ -10,24 +9,15 @@ export default function LandingHero() {
   const wrapRef = useRef(null)
   const [leaving, setLeaving] = useState(false)
 
-  function applyAt(px, py) {
-    const el = wrapRef.current
-    if (!el) return
-    el.style.setProperty('--parallax-x', `${px * -24}px`)
-    el.style.setProperty('--parallax-y', `${py * -16}px`)
-  }
-
   function handleMouseMove(e) {
     const el = wrapRef.current
     if (!el) return
     const rect = el.getBoundingClientRect()
     const px = (e.clientX - rect.left) / rect.width - 0.5
     const py = (e.clientY - rect.top) / rect.height - 0.5
-    applyAt(px, py)
+    el.style.setProperty('--parallax-x', `${px * -24}px`)
+    el.style.setProperty('--parallax-y', `${py * -16}px`)
   }
-
-  // celular/tablet: giroscópio assume o parallax no lugar do mouse
-  useTiltParallax(applyAt)
 
   function handleEnter() {
     setLeaving(true)

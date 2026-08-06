@@ -54,7 +54,7 @@ const SceneLayers = forwardRef(function SceneLayers({ period }, ref) {
 
   function resetParallax() {
     for (const el of refs.current.values()) {
-      el.style.transform = 'translate3d(0, 0, 0)'
+      el.style.transform = 'translate(0, 0)'
     }
   }
 
@@ -64,7 +64,7 @@ const SceneLayers = forwardRef(function SceneLayers({ period }, ref) {
       for (const [key, el] of refs.current) {
         const def = ALL_LAYER_DEFS.find((d) => d.key === key)
         if (!def) continue
-        el.style.transform = `translate3d(${px * -def.dx}px, ${py * -def.dy}px, 0)`
+        el.style.transform = `translate(${px * -def.dx}px, ${py * -def.dy}px)`
       }
       idleTimer.current = setTimeout(resetParallax, 1400)
     },

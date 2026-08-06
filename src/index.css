@@ -416,7 +416,6 @@ body {
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  will-change: transform;
 }
 .dust-mote {
   position: absolute;
@@ -571,9 +570,8 @@ body {
 .hero-bg-wrap {
   position: absolute;
   inset: -6%;
-  transform: translate3d(var(--parallax-x), var(--parallax-y), 0);
+  transform: translate(var(--parallax-x), var(--parallax-y));
   transition: transform 0.15s ease-out;
-  will-change: transform;
 }
 .hero-bg-img {
   width: 100%;
@@ -603,9 +601,8 @@ body {
   inset: -20px;
   --parallax-x: 0px;
   --parallax-y: 0px;
-  transform: translate3d(var(--parallax-x), var(--parallax-y), 0);
+  transform: translate(var(--parallax-x), var(--parallax-y));
   transition: transform 0.15s ease-out;
-  will-change: transform;
 }
 /* a imagem original é 16:9 — numa tela mais larga que isso (ultrawide,
    por exemplo), "cover" de ponta a ponta cortava a copa e as raízes pra
