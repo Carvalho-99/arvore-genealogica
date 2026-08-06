@@ -1,8 +1,9 @@
 # Árvore da Família Mostafá
 
-App pessoal de árvore genealógica, mobile-first. Duas partes:
+App pessoal de árvore genealógica, mobile-first. Três partes:
 
-- **Árvore** — cadastro manual de pessoas e relações (pais, cônjuge, filhos, irmãos), guardado no Firestore.
+- **Árvore principal** — cenário calmo (muda com o horário do dia) + "Explorar Interior" (cena cinematográfica, só visual/curiosidade). Não tem cadastro nem cartões aqui.
+- **Lista Simples** — onde a família de verdade é cadastrada e consultada: nomes em ordem de geração, texto puro, guardado no Firestore.
 - **Pesquisa** — busca pública sobre um sobrenome (origem, pessoas notáveis) via Wikidata/WikiTree, só por curiosidade — não é a árvore real.
 
 ## Rodando localmente
