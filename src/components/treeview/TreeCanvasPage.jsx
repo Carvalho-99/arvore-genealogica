@@ -10,6 +10,9 @@ import SimpleTreeBackdrop from './SimpleTreeBackdrop'
 
 const ALL_PERIODS = ['amanhecer', 'dia', 'por_do_sol', 'noite']
 
+const PERIOD_ICONS = { amanhecer: '🌅', dia: '☀️', por_do_sol: '🌇', noite: '🌙' }
+const PERIOD_LABELS = { amanhecer: 'Amanhecer', dia: 'Dia', por_do_sol: 'Pôr do sol', noite: 'Noite' }
+
 // zoom aplicado por modo, sobre a câmera do usuário — nunca muda o
 // enquadramento, só aproxima/afasta em torno do centro da tela
 const MODE_ZOOM = { cenario: 1, explorar: 1.175 }
@@ -19,7 +22,7 @@ const MODE_ZOOM = { cenario: 1, explorar: 1.175 }
 // gerenciar a família é tudo feito na Lista Simples (/lista).
 export default function TreeCanvasPage() {
   const navigate = useNavigate()
-  const period = useTimeOfDay()
+  const { period, isOverridden, cycleOverride } = useTimeOfDay()
   const containerRef = useRef(null)
   const worldRef = useRef(null)
   const sceneRef = useRef(null)
@@ -148,6 +151,14 @@ export default function TreeCanvasPage() {
             ⟵
           </button>
           <div className="pointer-events-auto flex gap-2">
+            <button
+              onClick={cycleOverride}
+              className="glass-btn"
+              aria-label={isOverridden ? `Cenário fixo: ${PERIOD_LABELS[period]} (toque pra mudar)` : 'Cenário automático (toque pra fixar um horário)'}
+              title={isOverridden ? `Fixo em ${PERIOD_LABELS[period]} — toque pra avançar` : 'Automático — toque pra fixar um horário'}
+            >
+              {isOverridden ? PERIOD_ICONS[period] : '🕐'}
+            </button>
             <button onClick={() => navigate('/pesquisa')} className="glass-btn" aria-label="Central de pesquisa">
               ❦
             </button>
