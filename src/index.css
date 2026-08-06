@@ -604,12 +604,11 @@ body {
   transform: translate(var(--parallax-x), var(--parallax-y));
   transition: transform 0.15s ease-out;
 }
-/* a imagem original é 16:9 — numa tela mais larga que isso (ultrawide,
-   por exemplo), "cover" de ponta a ponta cortava a copa e as raízes pra
-   preencher a largura. Duas camadas resolvem isso: o fundo borrado cobre
-   a tela inteira sem compromisso (pode cortar à vontade, é só atmosfera),
-   e a árvore em si usa "contain" por cima, então ela NUNCA é cortada,
-   nem em telas bem largas — só sobra uma faixa borrada nas laterais. */
+/* duas camadas: o fundo borrado (sempre "cover", pode cortar à vontade,
+   é só atmosfera) garante 100% de tela preenchida em qualquer formato,
+   e a árvore nítida por cima normalmente também usa "cover" (sem
+   nenhuma borda visível) — só em monitores ultrawide extremos ela volta
+   pra "contain", pra nunca cortar a copa/raízes lá (ver regra abaixo). */
 .empty-parallax-backdrop {
   position: absolute;
   inset: 0;
@@ -625,21 +624,23 @@ body {
   filter: blur(32px) brightness(0.82) saturate(1.05);
   opacity: 0.95;
 }
+/* "cover" por padrão em qualquer formato de tela — sem faixa/borda
+   nenhuma, sempre preenche 100% da viewport. Em telas de monitor
+   comuns (mesmo bem largas, tipo 16:9 ou um pouco mais) isso só corta
+   uma faixa fina de cima/baixo, imperceptível. Só em monitores
+   realmente ultrawide (acima de ~2.3:1) a copa/raízes começariam a
+   sumir de verdade — aí sim volta pro "contain" (com a faixa borrada
+   ao redor em vez de cortar). */
 .empty-parallax-img {
   position: relative;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   opacity: 0.85;
 }
-/* em telas em pé (celular/tablet no modo retrato) o problema é o oposto
-   do ultrawide: a tela é bem mais alta que larga, então "contain" (que
-   ajusta pela largura) sobrava uma faixa vazia enorme em cima/embaixo.
-   Em pé, "cover" é o certo — corta só as laterais (a árvore é larga),
-   preservando a copa e as raízes inteiras, que é o que importa. */
-@media (max-aspect-ratio: 1/1) {
+@media (min-aspect-ratio: 2.3/1) {
   .empty-parallax-img {
-    object-fit: cover;
+    object-fit: contain;
   }
 }
 
